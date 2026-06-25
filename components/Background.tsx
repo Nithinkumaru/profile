@@ -4,7 +4,62 @@ import { useEffect, useRef } from "react";
 
 export default function Background() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const spotlightRef = useRef<HTMLDivElement>(null);
+  const orbsRef = useRef<HTMLDivElement[]>([]);
 
+  // ── Mouse-reactive spotlight + parallax orbs ──
+  useEffect(() => {
+    const spotlight = spotlightRef.current;
+    if (!spotlight) return;
+
+    const orbs = orbsRef.current.filter(Boolean);
+    const orbOffsets = [
+      { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 },
+    ];
+    const parallaxStrength = [0.018, 0.012, 0.022, 0.008];
+
+    let mx = window.innerWidth / 2;
+    let my = window.innerHeight / 2;
+    let cx = mx;
+    let cy = my;
+    let rafId = 0;
+
+    const onMove = (e: MouseEvent) => {
+      mx = e.clientX;
+      my = e.clientY;
+    };
+
+    const tick = () => {
+      cx += (mx - cx) * 0.08;
+      cy += (my - cy) * 0.08;
+
+      // Spotlight follows cursor
+      spotlight.style.background = `radial-gradient(circle 400px at ${cx}px ${cy}px, rgba(108,62,244,0.09) 0%, transparent 70%)`;
+
+      // Orbs parallax away from center
+      const normX = (cx / window.innerWidth  - 0.5) * 2;
+      const normY = (cy / window.innerHeight - 0.5) * 2;
+
+      orbs.forEach((orb, i) => {
+        const s = parallaxStrength[i] ?? 0.01;
+        orbOffsets[i].x += (-normX * 40 * s * 100 - orbOffsets[i].x) * 0.05;
+        orbOffsets[i].y += (-normY * 40 * s * 100 - orbOffsets[i].y) * 0.05;
+        orb.style.transform = `translate3d(${orbOffsets[i].x}px,${orbOffsets[i].y}px,0)`;
+      });
+
+      rafId = requestAnimationFrame(tick);
+    };
+
+    rafId = requestAnimationFrame(tick);
+    window.addEventListener("mousemove", onMove, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      window.removeEventListener("mousemove", onMove);
+    };
+  }, []);
+
+  // ── Canvas: twinkling stars + slow flowing lines ──
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -14,48 +69,43 @@ export default function Background() {
     let w = (canvas.width = window.innerWidth);
     let h = (canvas.height = window.innerHeight);
 
-    const stars: { x: number; y: number; r: number; a: number; speed: number }[] = [];
-    for (let i = 0; i < 120; i++) {
-      stars.push({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        r: Math.random() * 1.2 + 0.2,
-        a: Math.random(),
-        speed: Math.random() * 0.008 + 0.002,
-      });
-    }
+    const stars = Array.from({ length: 140 }, () => ({
+      x: Math.random() * w,
+      y: Math.random() * h,
+      r: Math.random() * 1.1 + 0.2,
+      phase: Math.random() * Math.PI * 2,
+      speed: Math.random() * 0.006 + 0.003,
+    }));
 
-    let rafId: number;
     let t = 0;
+    let rafId = 0;
 
     const draw = () => {
       ctx.clearRect(0, 0, w, h);
-      t += 1;
+      t++;
 
-      // Stars
+      // Stars (twinkle)
       for (const s of stars) {
-        s.a += s.speed;
-        const alpha = (Math.sin(s.a) * 0.4 + 0.6) * 0.5;
+        const a = (Math.sin(s.phase + t * s.speed) * 0.35 + 0.5) * 0.55;
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(200,180,255,${alpha})`;
+        ctx.fillStyle = `rgba(200,180,255,${a})`;
         ctx.fill();
       }
 
-      // Flowing lines
-      for (let i = 0; i < 4; i++) {
+      // Slow flowing aurora lines
+      for (let i = 0; i < 3; i++) {
         ctx.beginPath();
-        const startX = (i / 4) * w;
-        const amplitude = 30 + i * 10;
-        const freq = 0.003 + i * 0.001;
-        const offset = (t * (0.3 + i * 0.1)) % (w * 2);
+        const speed = (i + 1) * 0.15;
+        const amp   = 20 + i * 12;
+        const freq  = 0.0025 + i * 0.001;
+        const yBase = h * (0.28 + i * 0.14);
 
-        ctx.moveTo(startX - offset, h * 0.3 + i * h * 0.1);
-        for (let x = -50; x < w + 50; x += 4) {
-          const y = h * (0.25 + i * 0.12) + Math.sin((x + offset) * freq) * amplitude;
-          ctx.lineTo(startX - offset + x + 50, y);
+        ctx.moveTo(0, yBase);
+        for (let x = 0; x <= w; x += 3) {
+          ctx.lineTo(x, yBase + Math.sin((x + t * speed * 2) * freq) * amp);
         }
-        ctx.strokeStyle = `rgba(120,60,220,${0.04 - i * 0.005})`;
+        ctx.strokeStyle = `rgba(100,50,200,${0.04 - i * 0.01})`;
         ctx.lineWidth = 1;
         ctx.stroke();
       }
@@ -79,17 +129,28 @@ export default function Background() {
 
   return (
     <div className="bg-scene">
-      {/* Atmospheric orbs */}
-      <div className="orb orb-1" />
-      <div className="orb orb-2" />
-      <div className="orb orb-3" />
-      <div className="orb orb-4" />
+      {/* Orbs with parallax via refs */}
+      {[0, 1, 2, 3].map((i) => (
+        <div
+          key={i}
+          ref={(el) => { if (el) orbsRef.current[i] = el; }}
+          className={`orb orb-${i + 1}`}
+          style={{ willChange: "transform" }}
+        />
+      ))}
 
       {/* Grid */}
       <div className="bg-grid" />
 
-      {/* Canvas for stars + flowing lines */}
+      {/* Canvas */}
       <canvas ref={canvasRef} className="bg-canvas" />
+
+      {/* Mouse spotlight */}
+      <div
+        ref={spotlightRef}
+        className="absolute inset-0 pointer-events-none"
+        style={{ zIndex: 1, willChange: "background" }}
+      />
 
       {/* Vignette */}
       <div className="bg-vignette" />

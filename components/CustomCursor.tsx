@@ -5,86 +5,140 @@ import { useEffect, useRef } from "react";
 export default function CustomCursor() {
   const dotRef = useRef<HTMLDivElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
-  const mousePos = useRef({ x: 0, y: 0 });
-  const ringPos = useRef({ x: 0, y: 0 });
-  const rafId = useRef<number>(0);
-  const isHovering = useRef(false);
 
   useEffect(() => {
+    // Only on true pointer (mouse) devices
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+
     const dot = dotRef.current;
     const ring = ringRef.current;
     if (!dot || !ring) return;
 
-    const onMouseMove = (e: MouseEvent) => {
-      mousePos.current = { x: e.clientX, y: e.clientY };
-      dot.style.left = `${e.clientX}px`;
-      dot.style.top = `${e.clientY}px`;
+    document.body.style.cursor = "none";
+
+    const mouse = { x: -200, y: -200 };
+    const ring$ = { x: -200, y: -200 };
+    let rafId = 0;
+    let hovered = false;
+    let pressed = false;
+
+    // ── Tick: ring lags behind with spring ──
+    const tick = () => {
+      ring$.x += (mouse.x - ring$.x) * 0.13;
+      ring$.y += (mouse.y - ring$.y) * 0.13;
+      ring.style.transform = `translate3d(${ring$.x}px,${ring$.y}px,0) translate(-50%,-50%)`;
+      rafId = requestAnimationFrame(tick);
+    };
+    rafId = requestAnimationFrame(tick);
+
+    const onMove = (e: MouseEvent) => {
+      mouse.x = e.clientX;
+      mouse.y = e.clientY;
+      dot.style.transform = `translate3d(${e.clientX}px,${e.clientY}px,0) translate(-50%,-50%)`;
     };
 
-    const onMouseOver = (e: MouseEvent) => {
-      const target = e.target as HTMLElement;
-      const isClickable =
-        target.tagName === "BUTTON" ||
-        target.tagName === "A" ||
-        target.tagName === "INPUT" ||
-        target.tagName === "TEXTAREA" ||
-        target.closest("button") ||
-        target.closest("a") ||
-        target.getAttribute("role") === "button" ||
-        target.classList.contains("magnetic-btn");
-
-      if (isClickable) {
-        ring.classList.add("hovering");
-        dot.style.transform = "translate(-50%, -50%) scale(2)";
-        dot.style.opacity = "0.5";
-        isHovering.current = true;
-      } else {
-        ring.classList.remove("hovering");
-        dot.style.transform = "translate(-50%, -50%) scale(1)";
-        dot.style.opacity = "1";
-        isHovering.current = false;
-      }
+    const onOver = (e: MouseEvent) => {
+      const t = e.target as HTMLElement;
+      const clickable = !!(
+        t.closest("a") ||
+        t.closest("button") ||
+        t.closest('[role="button"]') ||
+        t.classList.contains("card-btn") ||
+        t.classList.contains("social-link") ||
+        t.classList.contains("top-btn")
+      );
+      if (clickable === hovered) return;
+      hovered = clickable;
+      ring.style.width  = clickable ? "52px" : "36px";
+      ring.style.height = clickable ? "52px" : "36px";
+      ring.style.borderColor = clickable
+        ? "rgba(108,62,244,0.8)"
+        : "rgba(255,255,255,0.35)";
+      ring.style.background = clickable
+        ? "rgba(108,62,244,0.06)"
+        : "transparent";
+      dot.style.opacity = clickable ? "0.4" : "1";
     };
 
-    const onMouseDown = () => {
-      dot.style.transform = "translate(-50%, -50%) scale(0.5)";
-      ring.style.transform = "translate(-50%, -50%) scale(0.8)";
+    const onDown = () => {
+      pressed = true;
+      dot.style.transform += " scale(0.5)";
+      ring.style.transform += " scale(0.82)";
     };
 
-    const onMouseUp = () => {
-      dot.style.transform = `translate(-50%, -50%) scale(${isHovering.current ? 2 : 1})`;
-      ring.style.transform = "translate(-50%, -50%) scale(1)";
+    const onUp = () => {
+      pressed = false;
+      // scale will restore on next tick
     };
 
-    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-
-    const animate = () => {
-      ringPos.current.x = lerp(ringPos.current.x, mousePos.current.x, 0.12);
-      ringPos.current.y = lerp(ringPos.current.y, mousePos.current.y, 0.12);
-      ring.style.left = `${ringPos.current.x}px`;
-      ring.style.top = `${ringPos.current.y}px`;
-      rafId.current = requestAnimationFrame(animate);
+    const onLeave = () => {
+      dot.style.opacity = "0";
+      ring.style.opacity = "0";
+    };
+    const onEnter = () => {
+      dot.style.opacity = hovered ? "0.4" : "1";
+      ring.style.opacity = "1";
     };
 
-    rafId.current = requestAnimationFrame(animate);
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseover", onMouseOver);
-    document.addEventListener("mousedown", onMouseDown);
-    document.addEventListener("mouseup", onMouseUp);
+    document.addEventListener("mousemove", onMove);
+    document.addEventListener("mouseover", onOver);
+    document.addEventListener("mousedown", onDown);
+    document.addEventListener("mouseup", onUp);
+    document.documentElement.addEventListener("mouseleave", onLeave);
+    document.documentElement.addEventListener("mouseenter", onEnter);
 
     return () => {
-      cancelAnimationFrame(rafId.current);
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseover", onMouseOver);
-      document.removeEventListener("mousedown", onMouseDown);
-      document.removeEventListener("mouseup", onMouseUp);
+      cancelAnimationFrame(rafId);
+      document.body.style.cursor = "";
+      document.removeEventListener("mousemove", onMove);
+      document.removeEventListener("mouseover", onOver);
+      document.removeEventListener("mousedown", onDown);
+      document.removeEventListener("mouseup", onUp);
+      document.documentElement.removeEventListener("mouseleave", onLeave);
+      document.documentElement.removeEventListener("mouseenter", onEnter);
     };
   }, []);
 
   return (
     <>
-      <div ref={dotRef} className="cursor-dot" />
-      <div ref={ringRef} className="cursor-ring" />
+      {/* Dot — follows exactly */}
+      <div
+        ref={dotRef}
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: 7,
+          height: 7,
+          borderRadius: "50%",
+          background: "#7C3AED",
+          pointerEvents: "none",
+          zIndex: 99999,
+          willChange: "transform",
+          transition: "opacity 0.2s",
+        }}
+      />
+      {/* Ring — lags with spring */}
+      <div
+        ref={ringRef}
+        aria-hidden="true"
+        style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: 36,
+          height: 36,
+          borderRadius: "50%",
+          border: "1.5px solid rgba(255,255,255,0.35)",
+          background: "transparent",
+          pointerEvents: "none",
+          zIndex: 99998,
+          willChange: "transform",
+          transition:
+            "width 0.3s cubic-bezier(.22,.61,.36,1), height 0.3s cubic-bezier(.22,.61,.36,1), border-color 0.3s ease, background 0.3s ease, opacity 0.2s",
+        }}
+      />
     </>
   );
 }

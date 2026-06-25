@@ -144,10 +144,16 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 22px;
   overflow: hidden;
-  scroll-snap-align: start;
-  transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+  /* No scroll-snap — JS momentum handles it */
+  /* Only transition non-transform properties; JS drives transform/shadow */
+  transition: border-color 0.35s cubic-bezier(.22,.61,.36,1);
   position: relative;
-  cursor: default;
+  cursor: grab;
+  will-change: transform;
+}
+
+.card:active {
+  cursor: grabbing;
 }
 
 .card::before {
@@ -159,10 +165,9 @@ html, body {
   border-radius: 22px;
 }
 
+/* Border brightens on hover — transform/shadow handled by TiltCard JS */
 .card:hover {
-  transform: translateY(-4px) scale(1.01);
-  border-color: rgba(255, 255, 255, 0.28);
-  box-shadow: 0 20px 60px rgba(0,0,0,0.4), 0 0 0 1px rgba(255,255,255,0.1);
+  border-color: rgba(255, 255, 255, 0.32);
 }
 
 .card-tall { grid-row: span 2; }
@@ -504,6 +509,25 @@ html, body {
   background: rgba(76, 29, 149, 0.25);
   color: #c4b5fd;
   border: 1px solid rgba(139, 92, 246, 0.3);
+}
+
+/* ========== GPU ACCELERATION HINTS ========== */
+.orb, .top-btn, .ai-btn, .social-link, .card-btn {
+  will-change: transform;
+}
+
+.bg-canvas {
+  will-change: contents;
+}
+
+/* ========== PREFERS REDUCED MOTION ========== */
+@media (prefers-reduced-motion: reduce) {
+  .orb { animation: none !important; }
+  .ai-btn { animation: none !important; }
+  .typing-dot { animation: none !important; }
+  .card { transition: border-color 0.15s ease !important; }
+  .card-btn { transition: background 0.15s ease !important; }
+  .social-link { transition: background 0.15s ease !important; }
 }
 
 /* ========== SCROLL INDICATOR ========== */

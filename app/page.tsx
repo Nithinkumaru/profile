@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Github, Linkedin, Instagram, Mail, Share2, Flame } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -8,26 +8,39 @@ import dynamic from "next/dynamic";
 import Background from "@/components/Background";
 import CardGrid from "@/components/CardGrid";
 import ShareModal from "@/components/ShareModal";
+import CustomCursor from "@/components/CustomCursor";
 import { personalInfo } from "@/lib/data";
 
 const AIAssistant = dynamic(() => import("@/components/AIAssistant"), { ssr: false });
 
 const socials = [
-  { icon: Github, href: personalInfo.github, label: "GitHub" },
-  { icon: Linkedin, href: personalInfo.linkedin, label: "LinkedIn" },
-  { icon: Instagram, href: personalInfo.instagram, label: "Instagram" },
-  { icon: Mail, href: `mailto:${personalInfo.email}`, label: "Email" },
+  { icon: Github,    href: personalInfo.github,                label: "GitHub"    },
+  { icon: Linkedin,  href: personalInfo.linkedin,              label: "LinkedIn"  },
+  { icon: Instagram, href: personalInfo.instagram,             label: "Instagram" },
+  { icon: Mail,      href: `mailto:${personalInfo.email}`,     label: "Email"     },
 ];
 
-const roles = ["AI Engineer", "ML Developer", "Full Stack Dev", "Builder"];
+const EASE = [0.22, 0.61, 0.36, 1] as const;
 
 export default function Home() {
-  const [chatOpen, setChatOpen] = useState(false);
-  const [shareOpen, setShareOpen] = useState(false);
-  const [roleIndex] = useState(0);
+  const [chatOpen,   setChatOpen]   = useState(false);
+  const [shareOpen,  setShareOpen]  = useState(false);
+  const [roleIndex,  setRoleIndex]  = useState(0);
+
+  // Cycle through roles every 2.8 s
+  useEffect(() => {
+    const id = setInterval(
+      () => setRoleIndex((i) => (i + 1) % personalInfo.roles.length),
+      2800,
+    );
+    return () => clearInterval(id);
+  }, []);
 
   return (
     <>
+      {/* Custom cursor — desktop only (no-op on touch) */}
+      <CustomCursor />
+
       {/* Animated background */}
       <Background />
 
@@ -39,24 +52,22 @@ export default function Home() {
 
         {/* ── TOP BAR ── */}
         <div className="flex items-center justify-between px-5 pt-5 flex-shrink-0">
-          {/* Logo / Flame btn */}
           <motion.button
             className="top-btn"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.1 }}
+            initial={{ opacity: 0, scale: 0.75, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.08, ease: EASE }}
             onClick={() => setChatOpen(true)}
             title="Ask AI Assistant"
           >
             <Flame className="w-4 h-4 text-orange-400" />
           </motion.button>
 
-          {/* Share btn */}
           <motion.button
             className="top-btn"
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.15 }}
+            initial={{ opacity: 0, scale: 0.75, y: -8 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.14, ease: EASE }}
             onClick={() => setShareOpen(true)}
             title="Share profile"
           >
@@ -66,14 +77,15 @@ export default function Home() {
 
         {/* ── PROFILE HEADER ── */}
         <div className="flex-1 flex flex-col items-center justify-center pb-4 px-4 text-center min-h-0">
-          <motion.div
-            className="flex flex-col items-center gap-3"
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-          >
-            {/* Profile image */}
-            <div className="relative mb-1">
+          <div className="flex flex-col items-center gap-3">
+
+            {/* Avatar */}
+            <motion.div
+              className="relative mb-1"
+              initial={{ opacity: 0, scale: 0.88 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.6, delay: 0.18, ease: EASE }}
+            >
               <div
                 className="w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center font-bold text-white text-2xl"
                 style={{
@@ -83,28 +95,45 @@ export default function Home() {
               >
                 NK
               </div>
-              {/* Online dot */}
               <div
                 className="absolute bottom-1 right-1 w-4 h-4 rounded-full border-2 border-white"
                 style={{ background: "#22c55e", boxShadow: "0 0 8px #22c55e" }}
               />
-            </div>
+            </motion.div>
 
             {/* Name */}
-            <h1 className="profile-name">{personalInfo.name}</h1>
-
-            {/* Animated role */}
-            <motion.p
-              className="text-white/60 text-sm font-medium"
-              key={roleIndex}
-              initial={{ opacity: 0, y: 4 }}
+            <motion.h1
+              className="profile-name"
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.26, ease: EASE }}
             >
-              {roles[roleIndex]}
-            </motion.p>
+              {personalInfo.name}
+            </motion.h1>
 
-            {/* Social icons */}
-            <div className="profile-socials">
+            {/* Rotating role subtitle */}
+            <div style={{ height: 22, overflow: "hidden", position: "relative" }}>
+              <AnimatePresence mode="wait" initial={false}>
+                <motion.p
+                  key={roleIndex}
+                  className="text-white/55 text-sm font-medium tracking-wide"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.35, ease: EASE }}
+                >
+                  {personalInfo.roles[roleIndex]}
+                </motion.p>
+              </AnimatePresence>
+            </div>
+
+            {/* Socials */}
+            <motion.div
+              className="profile-socials"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.55, delay: 0.38, ease: EASE }}
+            >
               {socials.map(({ icon: Icon, href, label }) => (
                 <a
                   key={label}
@@ -117,17 +146,17 @@ export default function Home() {
                   <Icon className="w-4 h-4" />
                 </a>
               ))}
-            </div>
-          </motion.div>
+            </motion.div>
+          </div>
         </div>
 
         {/* ── CARD GRID ── */}
         <motion.div
           className="flex-shrink-0"
           style={{ paddingBottom: 72 }}
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 36 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          transition={{ duration: 0.65, delay: 0.45, ease: EASE }}
         >
           <CardGrid />
         </motion.div>
@@ -137,11 +166,11 @@ export default function Home() {
       <motion.button
         className="ai-btn"
         onClick={() => setChatOpen(true)}
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.7 }}
-        whileHover={{ scale: 1.03 }}
-        whileTap={{ scale: 0.97 }}
+        transition={{ duration: 0.55, delay: 0.62, ease: EASE }}
+        whileHover={{ scale: 1.04, transition: { duration: 0.2 } }}
+        whileTap={{ scale: 0.96 }}
       >
         {/* Dots like Claylight */}
         <div className="flex gap-1">
@@ -164,6 +193,7 @@ export default function Home() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.3, ease: EASE }}
             className="fixed inset-0 z-50"
           >
             <AIAssistant onClose={() => setChatOpen(false)} />
@@ -173,7 +203,14 @@ export default function Home() {
 
       <AnimatePresence>
         {shareOpen && (
-          <motion.div key="share" className="fixed inset-0 z-50">
+          <motion.div
+            key="share"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.25, ease: EASE }}
+            className="fixed inset-0 z-50"
+          >
             <ShareModal onClose={() => setShareOpen(false)} />
           </motion.div>
         )}
