@@ -48,7 +48,7 @@ function TiltCard({
 
       const ty   = s.hover ? -8 : 0;
       const sc   = s.hover ? 1.02 : 1;
-      const glow = s.hover ? "0 20px 60px rgba(0,0,0,0.35), inset 0 1px 0 rgba(255,255,255,0.15)" : "";
+      const glow = s.hover ? "0 20px 60px rgba(5,31,32,0.5), inset 0 1px 0 rgba(218,241,222,0.1)" : "";
 
       el.style.transform = `perspective(900px) rotateX(${s.rx}deg) rotateY(${s.ry}deg) translateY(${ty}px) scale(${sc})`;
       el.style.boxShadow = glow;
@@ -319,7 +319,7 @@ export default function CardGrid() {
         <TiltCard index={0} className="card-tall card-w-md p-5 flex flex-col gap-4" isDragging={dragging}>
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-white text-base flex-shrink-0"
-              style={{ background: "linear-gradient(135deg,#6C3EF4,#A855F7)" }}>
+              style={{ background: "linear-gradient(135deg,#163832,#8EB69B)" }}>
               NK
             </div>
             <div>
@@ -382,7 +382,7 @@ export default function CardGrid() {
           <div className="flex flex-col gap-2">
             {["Mon 10:00 AM", "Wed 2:00 PM", "Fri 11:00 AM"].map((slot) => (
               <div key={slot} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
-                style={{ background:"rgba(255,255,255,0.14)", border:"1px solid rgba(255,255,255,0.2)" }}>
+                style={{ background:"rgba(35,83,71,0.4)", border:"1px solid rgba(218,241,222,0.15)" }}>
                 <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background:"#22c55e" }} />
                 <span className="card-body">{slot}</span>
                 <span className="ml-auto card-body opacity-60">30 min</span>
@@ -399,9 +399,9 @@ export default function CardGrid() {
         <TiltCard index={4} className="card-tall card-w-lg p-5 flex flex-col gap-4 overflow-hidden" isDragging={dragging}>
           <div className="relative rounded-xl overflow-hidden flex-shrink-0" style={{ height:96 }}>
             <div className="absolute inset-0"
-              style={{ background:"linear-gradient(135deg,rgba(108,62,244,0.3),rgba(0,229,255,0.15))" }} />
+              style={{ background:"linear-gradient(135deg,rgba(22,56,50,0.6),rgba(142,182,155,0.15))" }} />
             <div className="absolute inset-0"
-              style={{ backgroundImage:"linear-gradient(rgba(108,62,244,0.18) 1px,transparent 1px),linear-gradient(90deg,rgba(108,62,244,0.18) 1px,transparent 1px)", backgroundSize:"20px 20px" }} />
+              style={{ backgroundImage:"linear-gradient(rgba(35,83,71,0.22) 1px,transparent 1px),linear-gradient(90deg,rgba(35,83,71,0.22) 1px,transparent 1px)", backgroundSize:"20px 20px" }} />
             <div className="absolute inset-0 flex items-center justify-center text-4xl select-none">🛡️</div>
           </div>
           <div className="card-label"><ExternalLink className="w-3 h-3" />Featured Project</div>
@@ -425,7 +425,7 @@ export default function CardGrid() {
           <div className="flex gap-4 mt-auto">
             {[["20+","Repos"],["500+","Commits"]].map(([v,l]) => (
               <div key={l} className="text-center">
-                <p className="font-bold text-lg" style={{ color:"#6C3EF4", fontFamily:"Space Grotesk" }}>{v}</p>
+                <p className="font-bold text-lg" style={{ color:"#8EB69B", fontFamily:"Space Grotesk" }}>{v}</p>
                 <p className="card-body" style={{ fontSize:10 }}>{l}</p>
               </div>
             ))}
@@ -454,7 +454,7 @@ export default function CardGrid() {
             {projects.slice(0, 4).map((p, i) => (
               <a key={p.id} href={p.github} target="_blank" rel="noopener noreferrer"
                 className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:bg-white/20 group"
-                style={{ background:"rgba(255,255,255,0.1)" }}>
+                style={{ background:"rgba(35,83,71,0.35)" }}>
                 <span className="text-xl flex-shrink-0 select-none">
                   {["🛡️","🚀","🤖","📞"][i]}
                 </span>

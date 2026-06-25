@@ -16,7 +16,7 @@ export default function Background() {
     const orbOffsets = [
       { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 }, { x: 0, y: 0 },
     ];
-    const parallaxStrength = [0.018, 0.012, 0.022, 0.008];
+    const parallaxStrength = [0.016, 0.011, 0.02, 0.007];
 
     let mx = window.innerWidth / 2;
     let my = window.innerHeight / 2;
@@ -34,7 +34,7 @@ export default function Background() {
       cy += (my - cy) * 0.08;
 
       // Spotlight follows cursor
-      spotlight.style.background = `radial-gradient(circle 400px at ${cx}px ${cy}px, rgba(108,62,244,0.09) 0%, transparent 70%)`;
+      spotlight.style.background = `radial-gradient(circle 420px at ${cx}px ${cy}px, rgba(35,83,71,0.12) 0%, transparent 70%)`;
 
       // Orbs parallax away from center
       const normX = (cx / window.innerWidth  - 0.5) * 2;
@@ -84,16 +84,16 @@ export default function Background() {
       ctx.clearRect(0, 0, w, h);
       t++;
 
-      // Stars (twinkle)
+      // Stars (twinkle) — mint green tint
       for (const s of stars) {
-        const a = (Math.sin(s.phase + t * s.speed) * 0.35 + 0.5) * 0.55;
+        const a = (Math.sin(s.phase + t * s.speed) * 0.35 + 0.5) * 0.45;
         ctx.beginPath();
         ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(200,180,255,${a})`;
+        ctx.fillStyle = `rgba(218,241,222,${a})`;
         ctx.fill();
       }
 
-      // Slow flowing aurora lines
+      // Slow flowing aurora lines — forest green
       for (let i = 0; i < 3; i++) {
         ctx.beginPath();
         const speed = (i + 1) * 0.15;
@@ -105,8 +105,8 @@ export default function Background() {
         for (let x = 0; x <= w; x += 3) {
           ctx.lineTo(x, yBase + Math.sin((x + t * speed * 2) * freq) * amp);
         }
-        ctx.strokeStyle = `rgba(100,50,200,${0.04 - i * 0.01})`;
-        ctx.lineWidth = 1;
+        ctx.strokeStyle = `rgba(35,83,71,${0.055 - i * 0.012})`;
+        ctx.lineWidth = 1.2;
         ctx.stroke();
       }
 

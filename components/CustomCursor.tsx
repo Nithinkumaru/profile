@@ -52,10 +52,10 @@ export default function CustomCursor() {
       ring.style.width  = clickable ? "52px" : "36px";
       ring.style.height = clickable ? "52px" : "36px";
       ring.style.borderColor = clickable
-        ? "rgba(108,62,244,0.8)"
-        : "rgba(255,255,255,0.35)";
+        ? "rgba(142,182,155,0.85)"
+        : "rgba(218,241,222,0.32)";
       ring.style.background = clickable
-        ? "rgba(108,62,244,0.06)"
+        ? "rgba(35,83,71,0.1)"
         : "transparent";
       dot.style.opacity = clickable ? "0.4" : "1";
     };
@@ -112,7 +112,7 @@ export default function CustomCursor() {
           width: 7,
           height: 7,
           borderRadius: "50%",
-          background: "#7C3AED",
+          background: "#8EB69B",
           pointerEvents: "none",
           zIndex: 99999,
           willChange: "transform",
@@ -130,13 +130,13 @@ export default function CustomCursor() {
           width: 36,
           height: 36,
           borderRadius: "50%",
-          border: "1.5px solid rgba(255,255,255,0.35)",
+          border: "1.5px solid rgba(218,241,222,0.32)",
           background: "transparent",
           pointerEvents: "none",
           zIndex: 99998,
           willChange: "transform",
           transition:
-            "width 0.3s cubic-bezier(.22,.61,.36,1), height 0.3s cubic-bezier(.22,.61,.36,1), border-color 0.3s ease, background 0.3s ease, opacity 0.2s",
+            "width 0.28s cubic-bezier(.22,.61,.36,1), height 0.28s cubic-bezier(.22,.61,.36,1), border-color 0.28s ease, background 0.28s ease, opacity 0.2s",
         }}
       />
     </>

@@ -89,8 +89,8 @@ export default function Home() {
               <div
                 className="w-20 h-20 md:w-24 md:h-24 rounded-full flex items-center justify-center font-bold text-white text-2xl"
                 style={{
-                  background: "linear-gradient(135deg, #6C3EF4 0%, #00E5FF 100%)",
-                  boxShadow: "0 0 40px rgba(108,62,244,0.5), 0 0 80px rgba(108,62,244,0.2)",
+                  background: "linear-gradient(135deg, #163832 0%, #8EB69B 100%)",
+                  boxShadow: "0 0 40px rgba(35,83,71,0.6), 0 0 80px rgba(35,83,71,0.25)",
                 }}
               >
                 NK
