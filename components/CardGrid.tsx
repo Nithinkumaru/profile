@@ -1,96 +1,85 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Github, Linkedin, Instagram, Mail, ExternalLink, Calendar,
   Download, Code2, Briefcase, ArrowRight, Sparkles, ChevronRight,
+  MapPin, Clock,
 } from "lucide-react";
 import { personalInfo, projects } from "@/lib/data";
+import { trackEvent } from "@/lib/supabase";
 
-// ─── Premium easing ─────────────────────────────────────────────────────────
 const EASE = [0.22, 0.61, 0.36, 1] as const;
+const GAP  = 12;   // px gap between columns
+const CARD_H = "clamp(290px, 40vh, 400px)"; // outer carousel height
 
 // ─── Card entrance animation ─────────────────────────────────────────────────
-const cardVariants = {
-  hidden: { opacity: 0, y: 28, scale: 0.96 },
+const colVariants = {
+  hidden:  { opacity: 0, y: 28, scale: 0.96 },
   visible: (i: number) => ({
     opacity: 1, y: 0, scale: 1,
-    transition: { duration: 0.55, delay: 0.35 + i * 0.07, ease: EASE },
+    transition: { duration: 0.5, delay: 0.3 + (i % 7) * 0.06, ease: EASE },
   }),
 };
 
-// ─── 3D tilt card wrapper ────────────────────────────────────────────────────
-function TiltCard({
+// ─── 3D Tilt wrapper ─────────────────────────────────────────────────────────
+function Card({
   children,
   className = "",
+  style = {},
   index = 0,
   isDragging,
 }: {
   children: React.ReactNode;
   className?: string;
+  style?: React.CSSProperties;
   index?: number;
   isDragging: React.MutableRefObject<boolean>;
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const state = useRef({ rx: 0, ry: 0, trx: 0, try_: 0, hover: false, raf: 0 });
+  const s   = useRef({ rx: 0, ry: 0, trx: 0, try_: 0, hover: false, raf: 0 });
 
   useEffect(() => {
     const el = ref.current;
     if (!el) return;
-    const s = state.current;
-    const isMouse = window.matchMedia("(hover: hover) and (pointer: fine)").matches;
-    if (!isMouse) return;
+    const p = s.current;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
 
     const tick = () => {
-      s.rx += (s.trx - s.rx) * 0.1;
-      s.ry += (s.try_ - s.ry) * 0.1;
-
-      const ty   = s.hover ? -8 : 0;
-      const sc   = s.hover ? 1.02 : 1;
-      const glow = s.hover ? "0 20px 60px rgba(5,31,32,0.5), inset 0 1px 0 rgba(218,241,222,0.1)" : "";
-
-      el.style.transform = `perspective(900px) rotateX(${s.rx}deg) rotateY(${s.ry}deg) translateY(${ty}px) scale(${sc})`;
-      el.style.boxShadow = glow;
-
-      if (Math.abs(s.rx - s.trx) > 0.01 || Math.abs(s.ry - s.try_) > 0.01 || s.hover) {
-        s.raf = requestAnimationFrame(tick);
-      }
+      p.rx += (p.trx - p.rx) * 0.1;
+      p.ry += (p.try_ - p.ry) * 0.1;
+      const lift = p.hover ? -6 : 0;
+      const sc   = p.hover ? 1.02 : 1;
+      const glow = p.hover
+        ? "0 18px 52px rgba(5,31,32,0.55), inset 0 1px 0 rgba(218,241,222,0.1)"
+        : "";
+      el.style.transform  = `perspective(900px) rotateX(${p.rx}deg) rotateY(${p.ry}deg) translateY(${lift}px) scale(${sc})`;
+      el.style.boxShadow  = glow;
+      if (Math.abs(p.rx - p.trx) > 0.01 || Math.abs(p.ry - p.try_) > 0.01 || p.hover)
+        p.raf = requestAnimationFrame(tick);
     };
 
-    const onEnter = () => {
-      if (isDragging.current) return;
-      s.hover = true;
-      cancelAnimationFrame(s.raf);
-      s.raf = requestAnimationFrame(tick);
-    };
-
-    const onMove = (e: MouseEvent) => {
-      if (isDragging.current || !s.hover) return;
+    const enter = () => { if (isDragging.current) return; p.hover = true;  cancelAnimationFrame(p.raf); p.raf = requestAnimationFrame(tick); };
+    const move  = (e: MouseEvent) => {
+      if (isDragging.current || !p.hover) return;
       const r = el.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width  - 0.5;
-      const y = (e.clientY - r.top)  / r.height - 0.5;
-      s.trx = -y * 5;
-      s.try_ = x * 5;
+      p.trx  = -((e.clientY - r.top)  / r.height - 0.5) * 5;
+      p.try_ =  ((e.clientX - r.left) / r.width  - 0.5) * 5;
+    };
+    const leave = () => {
+      p.hover = false; p.trx = 0; p.try_ = 0;
+      cancelAnimationFrame(p.raf); p.raf = requestAnimationFrame(tick);
     };
 
-    const onLeave = () => {
-      s.hover = false;
-      s.trx = 0;
-      s.try_ = 0;
-      cancelAnimationFrame(s.raf);
-      s.raf = requestAnimationFrame(tick);
-    };
-
-    el.addEventListener("mouseenter", onEnter);
-    el.addEventListener("mousemove",  onMove);
-    el.addEventListener("mouseleave", onLeave);
-
+    el.addEventListener("mouseenter", enter);
+    el.addEventListener("mousemove",  move);
+    el.addEventListener("mouseleave", leave);
     return () => {
-      cancelAnimationFrame(s.raf);
-      el.removeEventListener("mouseenter", onEnter);
-      el.removeEventListener("mousemove",  onMove);
-      el.removeEventListener("mouseleave", onLeave);
+      cancelAnimationFrame(p.raf);
+      el.removeEventListener("mouseenter", enter);
+      el.removeEventListener("mousemove",  move);
+      el.removeEventListener("mouseleave", leave);
     };
   }, [isDragging]);
 
@@ -98,407 +87,488 @@ function TiltCard({
     <motion.div
       ref={ref}
       custom={index}
-      variants={cardVariants}
+      variants={colVariants}
       initial="hidden"
       animate="visible"
       className={`card ${className}`}
-      style={{ willChange: "transform", transformStyle: "preserve-3d", cursor: "grab" }}
+      style={{ willChange: "transform", transformStyle: "preserve-3d", height: "100%", ...style }}
     >
-      {/* Inner highlight that moves with tilt */}
-      <div
-        className="absolute inset-0 rounded-[22px] pointer-events-none transition-opacity duration-300"
-        style={{
-          background: "linear-gradient(135deg, rgba(255,255,255,0.08) 0%, transparent 60%)",
-          opacity: 1,
-        }}
-      />
+      <div className="absolute inset-0 pointer-events-none" style={{ borderRadius: 22, background: "linear-gradient(135deg,rgba(218,241,222,0.04) 0%,transparent 60%)" }} />
       {children}
     </motion.div>
   );
 }
 
-// ─── Momentum horizontal scroller hook ──────────────────────────────────────
-function useMomentumScroll(containerRef: React.RefObject<HTMLDivElement | null>) {
-  const dragging = useRef(false);
-  const state = useRef({
-    pos: 0,      // current smooth scroll position
-    target: 0,   // where we want to be
-    vel: 0,      // velocity (from wheel or drag release)
-    dragStartX: 0,
-    dragStartPos: 0,
-    lastX: 0,
-    lastT: 0,
-    raf: 0,
+// ─── Infinite carousel physics hook ─────────────────────────────────────────
+function useInfiniteCarousel(trackRef: React.RefObject<HTMLDivElement | null>) {
+  const dragging  = useRef(false);
+  const pos       = useRef(0);          // current translateX
+  const vel       = useRef(0);          // velocity
+  const singleW   = useRef(0);         // width of one set of columns
+  const state     = useRef({
+    lastX: 0, lastT: 0, raf: 0,
+    idleTimer: 0, autoScroll: false,
   });
 
   useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
+    const track = trackRef.current;
+    if (!track) return;
+    const st = state.current;
 
-    const p = state.current;
-    const lerp = (a: number, b: number, t: number) => a + (b - a) * t;
-    const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
-    const maxX = () => el.scrollWidth - el.clientWidth;
-
-    // ── Snap to nearest card after settling ──
-    const snapNearest = () => {
-      const cards = Array.from(el.children) as HTMLElement[];
-      let best = 0;
-      let bestDist = Infinity;
-      for (const c of cards) {
-        const d = Math.abs(c.offsetLeft - p.pos);
-        if (d < bestDist) { bestDist = d; best = c.offsetLeft; }
-      }
-      // soft-snap: aim for that position
-      const dist = best - p.target;
-      if (Math.abs(dist) < 2) return; // already there
-      p.target += dist * 0.35;
+    // Measure single set width after layout
+    const init = () => {
+      const total = track.scrollWidth;
+      singleW.current = total / 3;
+      pos.current     = -singleW.current; // start at middle copy
+      track.style.transform = `translate3d(${pos.current}px,0,0)`;
     };
+    init();
 
-    // ── RAF loop ────────────────────────────────
+    const FRICTION  = 0.91;
+    const AUTO_SPD  = 0.55;
+
     const tick = () => {
-      const max = maxX();
-
-      // Apply velocity (momentum)
-      p.target = clamp(p.target + p.vel, 0, max);
-      p.vel   *= 0.88; // friction
-
-      // Spring toward target
-      const diff = p.target - p.pos;
-      p.pos += diff * 0.1;
-
-      // Write to DOM
-      el.scrollLeft = p.pos;
-
-      const moving = Math.abs(p.vel) > 0.08 || Math.abs(diff) > 0.2;
-      if (moving) {
-        p.raf = requestAnimationFrame(tick);
-      } else {
-        // settled — snap to nearest card
-        p.pos = p.target;
-        el.scrollLeft = p.pos;
-        snapNearest();
-        if (Math.abs(p.target - p.pos) > 0.5) {
-          p.raf = requestAnimationFrame(tick);
-        }
+      // Auto-scroll when idle
+      if (st.autoScroll && !dragging.current && Math.abs(vel.current) < 1) {
+        vel.current += (AUTO_SPD - vel.current) * 0.04;
       }
+
+      vel.current *= FRICTION;
+      pos.current += vel.current;
+
+      // Infinite loop — jump between copies (invisible because content identical)
+      const sw = singleW.current;
+      if (sw > 0) {
+        if (pos.current < -2 * sw) pos.current += sw;
+        if (pos.current > 0)        pos.current -= sw;
+      }
+
+      track.style.transform = `translate3d(${pos.current}px,0,0)`;
+
+      const moving = Math.abs(vel.current) > 0.04;
+      st.raf = moving || st.autoScroll ? requestAnimationFrame(tick) : 0;
     };
 
     const go = () => {
-      cancelAnimationFrame(p.raf);
-      p.raf = requestAnimationFrame(tick);
+      if (!st.raf) st.raf = requestAnimationFrame(tick);
     };
 
-    // ── Wheel → horizontal ───────────────────────
+    const resetIdleTimer = () => {
+      st.autoScroll = false;
+      clearTimeout(st.idleTimer);
+      st.idleTimer = window.setTimeout(() => { st.autoScroll = true; go(); }, 2000);
+    };
+
+    // ── Wheel ─────────────────────────────
     const onWheel = (e: WheelEvent) => {
       e.preventDefault();
-      // both vertical and horizontal wheel move the carousel
-      const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      const normalized = e.deltaMode === 1 ? delta * 30 : delta; // line mode
-      p.vel += normalized * 0.55;
-      p.vel  = clamp(p.vel, -80, 80);
+      resetIdleTimer();
+      const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+      vel.current += (e.deltaMode === 1 ? d * 30 : d) * 0.5;
+      vel.current = Math.max(-90, Math.min(90, vel.current));
       go();
     };
 
-    // ── Pointer drag ─────────────────────────────
+    // ── Pointer drag ───────────────────────
     const onDown = (e: PointerEvent) => {
-      // only main button
       if (e.button !== 0) return;
       dragging.current = true;
-      p.dragStartX   = e.clientX;
-      p.dragStartPos = p.pos;
-      p.vel          = 0;
-      p.lastX        = e.clientX;
-      p.lastT        = performance.now();
-      el.setPointerCapture(e.pointerId);
-      el.style.cursor = "grabbing";
-      cancelAnimationFrame(p.raf);
+      resetIdleTimer();
+      st.lastX = e.clientX;
+      st.lastT = performance.now();
+      vel.current = 0;
+      track.setPointerCapture(e.pointerId);
+      track.style.cursor = "grabbing";
+      cancelAnimationFrame(st.raf); st.raf = 0;
     };
 
     const onMove = (e: PointerEvent) => {
       if (!dragging.current) return;
-      const dx      = p.dragStartX - e.clientX;
-      const clamped = clamp(p.dragStartPos + dx, 0, maxX());
-
-      // Direct: no spring while dragging (feels responsive)
-      p.pos    = clamped;
-      p.target = clamped;
-      el.scrollLeft = p.pos;
-
-      // Track velocity
+      const dx  = e.clientX - st.lastX;
       const now = performance.now();
-      const dt  = now - p.lastT;
-      if (dt > 0 && dt < 60) {
-        p.vel = ((p.lastX - e.clientX) / dt) * 16; // 60fps
+      const dt  = now - st.lastT;
+
+      pos.current += dx;
+
+      // Clamp to visible copies during drag
+      const sw = singleW.current;
+      if (sw > 0) {
+        if (pos.current < -2 * sw) pos.current += sw;
+        if (pos.current > 0)        pos.current -= sw;
       }
-      p.lastX = e.clientX;
-      p.lastT = now;
+
+      track.style.transform = `translate3d(${pos.current}px,0,0)`;
+
+      if (dt > 0 && dt < 80) vel.current = (-dx / dt) * 16;
+      st.lastX = e.clientX;
+      st.lastT = now;
     };
 
     const onUp = (e: PointerEvent) => {
       if (!dragging.current) return;
       dragging.current = false;
-      el.releasePointerCapture(e.pointerId);
-      el.style.cursor = "grab";
-      go(); // let momentum continue
+      track.releasePointerCapture(e.pointerId);
+      track.style.cursor = "grab";
+      // Cap release velocity for smoothness
+      vel.current = Math.max(-60, Math.min(60, vel.current));
+      go();
     };
 
-    // ── Keyboard ────────────────────────────────
+    // ── Keyboard ──────────────────────────
     const onKey = (e: KeyboardEvent) => {
-      if (!el.matches(":focus-within") && document.activeElement?.closest(".cards-container") === null) return;
-      const step = 220;
-      if (e.key === "ArrowRight") { e.preventDefault(); p.target = clamp(p.target + step, 0, maxX()); go(); }
-      if (e.key === "ArrowLeft")  { e.preventDefault(); p.target = clamp(p.target - step, 0, maxX()); go(); }
+      if (e.key === "ArrowRight") { vel.current += 30; go(); }
+      if (e.key === "ArrowLeft")  { vel.current -= 30; go(); }
     };
 
-    el.addEventListener("wheel",       onWheel, { passive: false });
-    el.addEventListener("pointerdown", onDown);
-    el.addEventListener("pointermove", onMove);
-    el.addEventListener("pointerup",   onUp);
-    el.addEventListener("pointercancel", onUp);
-    window.addEventListener("keydown", onKey);
+    // Start auto-scroll after 2s
+    st.idleTimer = window.setTimeout(() => { st.autoScroll = true; go(); }, 2000);
+
+    track.addEventListener("wheel",         onWheel, { passive: false });
+    track.addEventListener("pointerdown",   onDown);
+    track.addEventListener("pointermove",   onMove);
+    track.addEventListener("pointerup",     onUp);
+    track.addEventListener("pointercancel", onUp);
+    window.addEventListener("keydown",      onKey);
+
+    const ro = new ResizeObserver(init);
+    ro.observe(track);
 
     return () => {
-      cancelAnimationFrame(p.raf);
-      el.removeEventListener("wheel",       onWheel);
-      el.removeEventListener("pointerdown", onDown);
-      el.removeEventListener("pointermove", onMove);
-      el.removeEventListener("pointerup",   onUp);
-      el.removeEventListener("pointercancel", onUp);
-      window.removeEventListener("keydown", onKey);
+      cancelAnimationFrame(st.raf);
+      clearTimeout(st.idleTimer);
+      ro.disconnect();
+      track.removeEventListener("wheel",         onWheel);
+      track.removeEventListener("pointerdown",   onDown);
+      track.removeEventListener("pointermove",   onMove);
+      track.removeEventListener("pointerup",     onUp);
+      track.removeEventListener("pointercancel", onUp);
+      window.removeEventListener("keydown",      onKey);
     };
-  }, [containerRef]);
+  }, [trackRef]);
 
   return dragging;
 }
 
-// ─── Scroll dot indicator ────────────────────────────────────────────────────
-function ScrollDots({ count, active }: { count: number; active: number }) {
+// ─── Individual card content ──────────────────────────────────────────────────
+
+function ProfileCardContent() {
   return (
-    <div className="scroll-dots" aria-hidden="true">
-      {Array.from({ length: count }).map((_, i) => (
-        <div key={i} className={`scroll-dot ${i === active ? "active" : ""}`} />
-      ))}
+    <div className="p-5 flex flex-col gap-3 h-full">
+      <div className="flex items-center gap-3">
+        <div className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
+          style={{ background: "linear-gradient(135deg,#163832,#8EB69B)", color: "#DAF1DE" }}>NK</div>
+        <div>
+          <p className="card-title" style={{ fontSize: 14, lineHeight: 1.2 }}>Nithin Kumar U</p>
+          <p className="card-body text-xs">AI &amp; ML Engineer</p>
+        </div>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background:"#4ade80", boxShadow:"0 0 6px #4ade80" }} />
+        <span className="card-body text-xs">Available for projects</span>
+      </div>
+      <p className="card-body text-xs flex-1 leading-relaxed">
+        I build intelligent products at the intersection of AI and exceptional UX.
+      </p>
+      <div className="flex items-center gap-1.5">
+        <MapPin size={11} style={{ color:"rgba(218,241,222,0.4)" }} />
+        <span className="card-body text-xs">{personalInfo.location}</span>
+      </div>
     </div>
   );
 }
 
-// ─── Main CardGrid ────────────────────────────────────────────────────────────
-export default function CardGrid() {
-  const scrollRef  = useRef<HTMLDivElement>(null);
-  const dragging   = useMomentumScroll(scrollRef);
-  const [activeDot, setActiveDot] = useState(0);
+function HireMeCardContent({ onClick }: { onClick: () => void }) {
+  return (
+    <div className="p-5 flex flex-col gap-3 h-full">
+      <div className="card-label"><ExternalLink size={10} />Let&apos;s work together</div>
+      <p className="card-title" style={{ fontSize: 20 }}>Hire Me</p>
+      <p className="card-body text-xs flex-1">Looking for an AI engineer or full-stack developer.</p>
+      <button onClick={onClick} className="card-btn" style={{ justifyContent: "center" }}>
+        <Mail size={13} />Get in touch
+      </button>
+    </div>
+  );
+}
 
-  // Update active dot on scroll
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    let raf = 0;
-    const check = () => {
-      raf = requestAnimationFrame(() => {
-        const first = (el.children[0] as HTMLElement)?.offsetWidth ?? 220;
-        setActiveDot(Math.round(el.scrollLeft / (first + 12)));
-      });
-    };
-    el.addEventListener("scroll", check, { passive: true });
-    return () => { el.removeEventListener("scroll", check); cancelAnimationFrame(raf); };
-  }, []);
+function ContactCardContent({ onClick }: { onClick: () => void }) {
+  return (
+    <div className="p-5 flex flex-col gap-3 h-full">
+      <div className="card-label"><Briefcase size={10} />Contact</div>
+      <div className="flex flex-col gap-1.5 flex-1">
+        <a href={`mailto:${personalInfo.email}`} className="card-body text-xs hover:underline truncate"
+          onClick={() => trackEvent("github_click")}>{personalInfo.email}</a>
+        <p className="card-body text-xs">{personalInfo.location}</p>
+      </div>
+      <div className="flex gap-2 mt-auto">
+        {([
+          { icon: Github,    href: personalInfo.github,    event: "github_click"   as const },
+          { icon: Linkedin,  href: personalInfo.linkedin,  event: "linkedin_click" as const },
+          { icon: Instagram, href: personalInfo.instagram, event: "github_click"   as const },
+          { icon: Mail,      href: `mailto:${personalInfo.email}`, event: "contact_submit" as const },
+        ] as const).map(({ icon: Icon, href, event }, i) => (
+          <a key={i} href={href} target="_blank" rel="noopener noreferrer"
+            className="social-link" style={{ width: 30, height: 30 }}
+            onClick={() => trackEvent(event)}>
+            <Icon size={13} />
+          </a>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function BookingCardContent({ onClick }: { onClick: () => void }) {
+  const slots = ["Mon–Fri  10 AM", "Mon–Fri  2 PM", "Sat  11 AM"];
+  return (
+    <div className="p-5 flex flex-col gap-3 h-full">
+      <div className="card-label"><Calendar size={10} />Free 30-min call</div>
+      <p className="card-title" style={{ fontSize: 20 }}>Book a Call</p>
+      <p className="card-body text-xs">No commitment — just a chat about your project.</p>
+      <div className="flex flex-col gap-1.5 flex-1">
+        {slots.map(s => (
+          <div key={s} className="flex items-center gap-2 px-3 py-2 rounded-xl"
+            style={{ background:"rgba(35,83,71,0.35)", border:"1px solid rgba(218,241,222,0.1)" }}>
+            <Clock size={11} style={{ color:"#8EB69B", flexShrink: 0 }} />
+            <span className="card-body text-xs">{s}</span>
+          </div>
+        ))}
+      </div>
+      <button onClick={onClick} className="card-btn" style={{ justifyContent: "center" }}>
+        <Calendar size={13} />Schedule 30 min
+      </button>
+    </div>
+  );
+}
+
+function FeaturedProjectCardContent() {
+  const p = projects[0];
+  return (
+    <div className="p-5 flex flex-col gap-3 h-full">
+      <div className="relative rounded-xl overflow-hidden flex-shrink-0" style={{ height: 80 }}>
+        <div className="absolute inset-0" style={{ background:"linear-gradient(135deg,rgba(22,56,50,0.6),rgba(142,182,155,0.15))" }} />
+        <div className="absolute inset-0" style={{ backgroundImage:"linear-gradient(rgba(35,83,71,0.22) 1px,transparent 1px),linear-gradient(90deg,rgba(35,83,71,0.22) 1px,transparent 1px)", backgroundSize:"20px 20px" }} />
+        <div className="absolute inset-0 flex items-center justify-center text-3xl select-none">🛡️</div>
+      </div>
+      <div className="card-label"><Sparkles size={10} />Featured</div>
+      <p className="card-title" style={{ fontSize: 16, lineHeight: 1.3 }}>{p.title}</p>
+      <p className="card-body text-xs flex-1 line-clamp-2">{p.description}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {p.tech.slice(0,3).map(t => <span key={t} className="tech-badge" style={{ fontSize: 10 }}>{t}</span>)}
+      </div>
+      <a href={p.github} target="_blank" rel="noopener noreferrer" className="card-btn"
+        style={{ justifyContent: "center" }} onClick={() => trackEvent("project_click")}>
+        <Github size={13} />GitHub
+      </a>
+    </div>
+  );
+}
+
+function GitHubCardContent() {
+  return (
+    <div className="p-5 flex flex-col gap-3 h-full">
+      <div className="card-label"><Github size={10} />Open Source</div>
+      <p className="card-title" style={{ fontSize: 18 }}>GitHub</p>
+      <div className="flex gap-4 flex-1 items-center">
+        {[["20+","Repos"],["500+","Commits"]].map(([v,l]) => (
+          <div key={l} className="text-center">
+            <p style={{ fontSize: 18, fontWeight: 800, color:"#8EB69B", fontFamily:"Space Grotesk,sans-serif" }}>{v}</p>
+            <p className="card-body" style={{ fontSize: 10 }}>{l}</p>
+          </div>
+        ))}
+      </div>
+      <a href={personalInfo.github} target="_blank" rel="noopener noreferrer" className="card-btn"
+        style={{ justifyContent: "center" }} onClick={() => trackEvent("github_click")}>
+        Browse <ExternalLink size={13} />
+      </a>
+    </div>
+  );
+}
+
+function LinkedInCardContent() {
+  return (
+    <div className="p-5 flex flex-col gap-3 h-full">
+      <div className="card-label"><Linkedin size={10} />Network</div>
+      <p className="card-title" style={{ fontSize: 18 }}>LinkedIn</p>
+      <p className="card-body text-xs flex-1">Open to freelance, full-time, and consulting roles.</p>
+      <a href={personalInfo.linkedin} target="_blank" rel="noopener noreferrer" className="card-btn"
+        style={{ justifyContent: "center" }} onClick={() => trackEvent("linkedin_click")}>
+        Connect <ChevronRight size={13} />
+      </a>
+    </div>
+  );
+}
+
+function ProjectsCardContent() {
+  const icons = ["🛡️","🚀","🤖","📞"];
+  return (
+    <div className="p-5 flex flex-col gap-3 h-full">
+      <div className="card-label"><Code2 size={10} />Portfolio</div>
+      <p className="card-title" style={{ fontSize: 20 }}>My Projects</p>
+      <div className="flex flex-col gap-2 flex-1 overflow-hidden">
+        {projects.slice(0,4).map((p, i) => (
+          <a key={p.id} href={p.github} target="_blank" rel="noopener noreferrer"
+            className="flex items-center gap-3 p-2.5 rounded-xl group"
+            style={{ background:"rgba(35,83,71,0.3)", transition:"background 0.2s ease" }}
+            onClick={() => trackEvent("project_click")}
+          >
+            <span className="text-xl flex-shrink-0 select-none">{icons[i]}</span>
+            <div className="flex-1 min-w-0">
+              <p className="card-title truncate" style={{ fontSize: 13 }}>{p.title}</p>
+              <p className="card-body text-xs truncate">{p.tech.slice(0,2).join(" · ")}</p>
+            </div>
+            <ExternalLink size={11} style={{ color:"rgba(218,241,222,0.3)", flexShrink: 0 }} />
+          </a>
+        ))}
+      </div>
+      <a href={personalInfo.github} target="_blank" rel="noopener noreferrer" className="card-btn"
+        style={{ justifyContent: "center" }} onClick={() => trackEvent("github_click")}>
+        All projects <ArrowRight size={13} />
+      </a>
+    </div>
+  );
+}
+
+function ResumeCardContent() {
+  return (
+    <div className="p-5 flex flex-col gap-3 h-full">
+      <div className="card-label"><Download size={10} />Resume</div>
+      <p className="card-title" style={{ fontSize: 18 }}>Download CV</p>
+      <p className="card-body text-xs flex-1">AI Engineer · Full Stack · ML</p>
+      <a href={personalInfo.resume} download className="card-btn" style={{ justifyContent: "center" }}
+        onClick={() => trackEvent("resume_download")}>
+        <Download size={13} />PDF
+      </a>
+    </div>
+  );
+}
+
+function LatestBuildCardContent() {
+  const p = projects[1];
+  return (
+    <div className="p-5 flex flex-col gap-3 h-full">
+      <div className="card-label"><Sparkles size={10} />Latest</div>
+      <p className="card-title" style={{ fontSize: 14, lineHeight: 1.3 }}>{p.title}</p>
+      <div className="flex flex-wrap gap-1">
+        {p.tech.slice(0,2).map(t => <span key={t} className="tech-badge" style={{ fontSize: 10 }}>{t}</span>)}
+      </div>
+      <a href={p.github} target="_blank" rel="noopener noreferrer" className="card-btn mt-auto"
+        style={{ justifyContent: "center" }} onClick={() => trackEvent("project_click")}>
+        View <ExternalLink size={13} />
+      </a>
+    </div>
+  );
+}
+
+// ─── Column layout ────────────────────────────────────────────────────────────
+// type: 'tall' = one card fills full height | 'pair' = two cards stacked
+
+type ColDef =
+  | { id: string; width: number; type: "tall"; content: React.ReactNode }
+  | { id: string; width: number; type: "pair"; top: React.ReactNode; bottom: React.ReactNode };
+
+function buildCols(onContact: () => void, onBooking: () => void): ColDef[] {
+  return [
+    { id: "profile",  width: 210, type: "tall", content: <ProfileCardContent /> },
+    { id: "hireme",   width: 210, type: "pair",
+      top:    <HireMeCardContent    onClick={onContact} />,
+      bottom: <ContactCardContent   onClick={onContact} /> },
+    { id: "booking",  width: 265, type: "tall", content: <BookingCardContent  onClick={onBooking} /> },
+    { id: "featured", width: 265, type: "tall", content: <FeaturedProjectCardContent /> },
+    { id: "socials",  width: 210, type: "pair",
+      top:    <GitHubCardContent />,
+      bottom: <LinkedInCardContent /> },
+    { id: "projects", width: 320, type: "tall", content: <ProjectsCardContent /> },
+    { id: "resume",   width: 210, type: "pair",
+      top:    <ResumeCardContent />,
+      bottom: <LatestBuildCardContent /> },
+  ];
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
+interface Props {
+  onContact: () => void;
+  onBooking: () => void;
+}
+
+export default function CardGrid({ onContact, onBooking }: Props) {
+  const outerRef = useRef<HTMLDivElement>(null);
+  const trackRef = useRef<HTMLDivElement>(null);
+  const dragging = useInfiniteCarousel(trackRef);
+  const [cols]   = useState(() => buildCols(onContact, onBooking));
+
+  // 3 copies for seamless infinite loop
+  const allCols = [...cols, ...cols, ...cols];
 
   return (
-    <div className="relative w-full">
+    <div style={{ position: "relative", width: "100%" }}>
+      {/* Fade masks at edges */}
+      <div style={{
+        position: "absolute", left: 0, top: 0, bottom: 0, width: 48, zIndex: 2,
+        background: "linear-gradient(90deg, #051F20 0%, transparent 100%)",
+        pointerEvents: "none",
+      }} />
+      <div style={{
+        position: "absolute", right: 0, top: 0, bottom: 0, width: 48, zIndex: 2,
+        background: "linear-gradient(270deg, #051F20 0%, transparent 100%)",
+        pointerEvents: "none",
+      }} />
+
+      {/* Scroll container */}
       <div
-        ref={scrollRef}
-        className="cards-container"
-        style={{ height: "clamp(320px, 42vh, 440px)" }}
-        tabIndex={0}
-        role="region"
-        aria-label="Profile cards — drag or scroll to explore"
+        ref={outerRef}
+        style={{
+          overflow: "hidden",
+          cursor: "grab",
+          paddingLeft: 24,
+          paddingRight: 24,
+        }}
       >
-
-        {/* 1 ── Profile (tall, 2-row) */}
-        <TiltCard index={0} className="card-tall card-w-md p-5 flex flex-col gap-4" isDragging={dragging}>
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-bold text-white text-base flex-shrink-0"
-              style={{ background: "linear-gradient(135deg,#163832,#8EB69B)" }}>
-              NK
-            </div>
-            <div>
-              <p className="card-title text-base leading-tight">Nithin Kumar U</p>
-              <p className="card-body text-xs">AI &amp; ML Engineer</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full" style={{ background:"#22c55e", boxShadow:"0 0 6px #22c55e" }} />
-            <span className="card-body text-xs">Available for projects</span>
-          </div>
-          <p className="card-body text-xs flex-1 leading-relaxed">
-            I build intelligent products at the intersection of AI and exceptional UX.
-          </p>
-          <button className="card-btn group" onClick={() => {}}>
-            Learn more
-            <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
-          </button>
-        </TiltCard>
-
-        {/* 2 ── Hire Me (short top) */}
-        <TiltCard index={1} className="card-short card-w-md p-5 flex flex-col gap-3" isDragging={dragging}>
-          <div className="card-label"><ExternalLink className="w-3 h-3" />Let&apos;s work together</div>
-          <p className="card-title text-lg">Hire Me</p>
-          <a href={`mailto:${personalInfo.email}`} className="card-btn mt-auto group">
-            <Mail className="w-3.5 h-3.5" />
-            Get in touch
-          </a>
-        </TiltCard>
-
-        {/* 3 ── Contact / socials (short bottom) */}
-        <TiltCard index={2} className="card-short card-w-md p-5 flex flex-col gap-3" isDragging={dragging}>
-          <div className="card-label"><Briefcase className="w-3 h-3" />Reach out</div>
-          <div className="flex flex-col gap-1 flex-1">
-            <p className="card-body text-xs">{personalInfo.email}</p>
-            <p className="card-body text-xs">{personalInfo.location}</p>
-          </div>
-          <div className="flex gap-2 mt-auto">
-            {[
-              { icon: Github,    href: personalInfo.github },
-              { icon: Linkedin,  href: personalInfo.linkedin },
-              { icon: Instagram, href: personalInfo.instagram },
-              { icon: Mail,      href: `mailto:${personalInfo.email}` },
-            ].map(({ icon: Icon, href }, i) => (
-              <a key={i} href={href} target="_blank" rel="noopener noreferrer"
-                className="social-link" style={{ width:30, height:30 }}>
-                <Icon className="w-3.5 h-3.5" />
-              </a>
-            ))}
-          </div>
-        </TiltCard>
-
-        {/* 4 ── Book a Call (tall) */}
-        <TiltCard index={3} className="card-tall card-w-lg p-5 flex flex-col gap-4" isDragging={dragging}>
-          <div className="card-label"><Calendar className="w-3 h-3" />Free consultation</div>
-          <p className="card-title">Book a Call</p>
-          <p className="card-body text-xs flex-1">
-            Have a project in mind? Let&apos;s chat! Free 30-minute consultations available.
-          </p>
-          <div className="flex flex-col gap-2">
-            {["Mon 10:00 AM", "Wed 2:00 PM", "Fri 11:00 AM"].map((slot) => (
-              <div key={slot} className="flex items-center gap-2 px-3 py-2 rounded-xl text-xs"
-                style={{ background:"rgba(35,83,71,0.4)", border:"1px solid rgba(218,241,222,0.15)" }}>
-                <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background:"#22c55e" }} />
-                <span className="card-body">{slot}</span>
-                <span className="ml-auto card-body opacity-60">30 min</span>
-              </div>
-            ))}
-          </div>
-          <a href="https://calendly.com/" target="_blank" rel="noopener noreferrer" className="card-btn group">
-            <Calendar className="w-3.5 h-3.5" />
-            Schedule 30-min call
-          </a>
-        </TiltCard>
-
-        {/* 5 ── Featured Project (tall) */}
-        <TiltCard index={4} className="card-tall card-w-lg p-5 flex flex-col gap-4 overflow-hidden" isDragging={dragging}>
-          <div className="relative rounded-xl overflow-hidden flex-shrink-0" style={{ height:96 }}>
-            <div className="absolute inset-0"
-              style={{ background:"linear-gradient(135deg,rgba(22,56,50,0.6),rgba(142,182,155,0.15))" }} />
-            <div className="absolute inset-0"
-              style={{ backgroundImage:"linear-gradient(rgba(35,83,71,0.22) 1px,transparent 1px),linear-gradient(90deg,rgba(35,83,71,0.22) 1px,transparent 1px)", backgroundSize:"20px 20px" }} />
-            <div className="absolute inset-0 flex items-center justify-center text-4xl select-none">🛡️</div>
-          </div>
-          <div className="card-label"><ExternalLink className="w-3 h-3" />Featured Project</div>
-          <p className="card-title text-lg leading-tight">{projects[0].title}</p>
-          <p className="card-body text-xs flex-1 line-clamp-2">{projects[0].description}</p>
-          <div className="flex flex-wrap gap-1.5">
-            {projects[0].tech.slice(0, 3).map((t) => (
-              <span key={t} className="tech-badge">{t}</span>
-            ))}
-          </div>
-          <a href={projects[0].github} target="_blank" rel="noopener noreferrer" className="card-btn group">
-            <Github className="w-3.5 h-3.5" />
-            View on GitHub
-          </a>
-        </TiltCard>
-
-        {/* 6 ── GitHub stats (short top) */}
-        <TiltCard index={5} className="card-short card-w-md p-5 flex flex-col gap-3" isDragging={dragging}>
-          <div className="card-label"><Github className="w-3 h-3" />GitHub</div>
-          <p className="card-title text-lg">My Code</p>
-          <div className="flex gap-4 mt-auto">
-            {[["20+","Repos"],["500+","Commits"]].map(([v,l]) => (
-              <div key={l} className="text-center">
-                <p className="font-bold text-lg" style={{ color:"#8EB69B", fontFamily:"Space Grotesk" }}>{v}</p>
-                <p className="card-body" style={{ fontSize:10 }}>{l}</p>
-              </div>
-            ))}
-          </div>
-          <a href={personalInfo.github} target="_blank" rel="noopener noreferrer" className="card-btn group">
-            Browse <ExternalLink className="w-3.5 h-3.5" />
-          </a>
-        </TiltCard>
-
-        {/* 7 ── LinkedIn (short bottom) */}
-        <TiltCard index={6} className="card-short card-w-md p-5 flex flex-col gap-3" isDragging={dragging}>
-          <div className="card-label"><Linkedin className="w-3 h-3" />LinkedIn</div>
-          <p className="card-title text-lg">Connect</p>
-          <p className="card-body text-xs flex-1">Let&apos;s build a professional connection!</p>
-          <a href={personalInfo.linkedin} target="_blank" rel="noopener noreferrer" className="card-btn group">
-            View Profile <ChevronRight className="w-3.5 h-3.5" />
-          </a>
-        </TiltCard>
-
-        {/* 8 ── All projects (tall) */}
-        <TiltCard index={7} className="card-tall card-w-xl p-5 flex flex-col gap-3" isDragging={dragging}>
-          <div className="card-label"><Code2 className="w-3 h-3" />View My Work</div>
-          <p className="card-title">My Projects</p>
-          <p className="card-body text-xs">AI systems, full-stack apps and ML models shipped to production.</p>
-          <div className="flex flex-col gap-2 flex-1">
-            {projects.slice(0, 4).map((p, i) => (
-              <a key={p.id} href={p.github} target="_blank" rel="noopener noreferrer"
-                className="flex items-center gap-3 p-3 rounded-xl transition-all duration-200 hover:bg-white/20 group"
-                style={{ background:"rgba(35,83,71,0.35)" }}>
-                <span className="text-xl flex-shrink-0 select-none">
-                  {["🛡️","🚀","🤖","📞"][i]}
-                </span>
-                <div className="flex-1 min-w-0">
-                  <p className="card-title text-sm truncate">{p.title}</p>
-                  <p className="card-body text-xs truncate">{p.tech.slice(0,2).join(" · ")}</p>
+        {/* Infinite track */}
+        <div
+          ref={trackRef}
+          style={{
+            display: "flex",
+            gap: GAP,
+            height: CARD_H,
+            willChange: "transform",
+            userSelect: "none",
+          }}
+        >
+          {allCols.map((col, i) => {
+            const colIdx = i % cols.length;
+            if (col.type === "tall") {
+              return (
+                <div key={`${col.id}-${i}`} style={{ width: col.width, height: "100%", flexShrink: 0 }}>
+                  <Card index={colIdx} isDragging={dragging} style={{ height: "100%" }}>
+                    {col.content}
+                  </Card>
                 </div>
-                <ExternalLink className="w-3 h-3 text-black/30 group-hover:text-black/60 flex-shrink-0 transition-colors" />
-              </a>
-            ))}
-          </div>
-          <a href={personalInfo.github} target="_blank" rel="noopener noreferrer" className="card-btn group">
-            See all projects <ArrowRight className="w-3.5 h-3.5 transition-transform duration-200 group-hover:translate-x-1" />
-          </a>
-        </TiltCard>
-
-        {/* 9 ── Resume (short top) */}
-        <TiltCard index={8} className="card-short card-w-md p-5 flex flex-col gap-3" isDragging={dragging}>
-          <div className="card-label"><Download className="w-3 h-3" />Resume</div>
-          <p className="card-title text-lg">Download CV</p>
-          <a href={personalInfo.resume} download className="card-btn mt-auto group">
-            <Download className="w-3.5 h-3.5" />
-            Download PDF
-          </a>
-        </TiltCard>
-
-        {/* 10 ── Latest build (short bottom) */}
-        <TiltCard index={9} className="card-short card-w-md p-5 flex flex-col gap-3" isDragging={dragging}>
-          <div className="card-label"><Sparkles className="w-3 h-3" />Latest Build</div>
-          <p className="card-title text-base leading-tight">{projects[1].title}</p>
-          <div className="flex flex-wrap gap-1">
-            {projects[1].tech.slice(0,2).map((t) => (
-              <span key={t} className="tech-badge" style={{ fontSize:10, padding:"2px 8px" }}>{t}</span>
-            ))}
-          </div>
-          <a href={projects[1].github} target="_blank" rel="noopener noreferrer" className="card-btn mt-auto group">
-            View <ExternalLink className="w-3 h-3" />
-          </a>
-        </TiltCard>
-
+              );
+            }
+            return (
+              <div key={`${col.id}-${i}`} style={{ width: col.width, height: "100%", flexShrink: 0, display: "flex", flexDirection: "column", gap: GAP }}>
+                <Card index={colIdx} isDragging={dragging} style={{ flex: 1 }}>
+                  {col.top}
+                </Card>
+                <Card index={colIdx + 1} isDragging={dragging} style={{ flex: 1 }}>
+                  {col.bottom}
+                </Card>
+              </div>
+            );
+          })}
+        </div>
       </div>
 
-      {/* Scroll indicator dots */}
-      <ScrollDots count={5} active={Math.min(activeDot, 4)} />
+      {/* Scroll hint dots (decorative) */}
+      <div style={{ display: "flex", gap: 5, justifyContent: "center", padding: "10px 0 0" }}>
+        {[0,1,2,3,4].map(i => (
+          <div key={i} style={{
+            width: i === 2 ? 18 : 5, height: 5, borderRadius: 3,
+            background: i === 2 ? "rgba(218,241,222,0.6)" : "rgba(218,241,222,0.18)",
+            transition: "all 0.3s ease",
+          }} />
+        ))}
+      </div>
     </div>
   );
 }
