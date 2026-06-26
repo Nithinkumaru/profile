@@ -8,28 +8,34 @@ interface Props { onComplete: () => void }
 export default function LoadingScreen({ onComplete }: Props) {
   const [progress, setProgress] = useState(0);
   const [done, setDone]         = useState(false);
-  const rafRef = useRef(0);
-  const startRef = useRef(0);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
-    startRef.current = performance.now();
+    // Advance progress with a simple interval — works even when rAF is throttled
+    timerRef.current = setInterval(() => {
+      setProgress(p => {
+        if (p >= 100) {
+          clearInterval(timerRef.current!);
+          setTimeout(() => setDone(true), 200);
+          return 100;
+        }
+        // Ease-out: fast at first, slow near 100
+        const step = Math.max(1, Math.round((100 - p) * 0.12));
+        return Math.min(100, p + step);
+      });
+    }, 30);
 
-    const animate = (now: number) => {
-      const elapsed = now - startRef.current;
-      // ease-out over 1400 ms to 100
-      const p = Math.min(100, Math.pow(elapsed / 1400, 0.55) * 100);
-      setProgress(Math.round(p));
+    // Hard failsafe — always complete within 2.5 s no matter what
+    const failsafe = setTimeout(() => {
+      clearInterval(timerRef.current!);
+      setProgress(100);
+      setTimeout(() => setDone(true), 200);
+    }, 2500);
 
-      if (p < 100) {
-        rafRef.current = requestAnimationFrame(animate);
-      } else {
-        // hold briefly then exit
-        setTimeout(() => setDone(true), 250);
-      }
+    return () => {
+      clearInterval(timerRef.current!);
+      clearTimeout(failsafe);
     };
-
-    rafRef.current = requestAnimationFrame(animate);
-    return () => cancelAnimationFrame(rafRef.current);
   }, []);
 
   return (
@@ -39,7 +45,7 @@ export default function LoadingScreen({ onComplete }: Props) {
           key="loader"
           initial={{ opacity: 1 }}
           exit={{ opacity: 0, scale: 1.04 }}
-          transition={{ duration: 0.55, ease: [0.22, 0.61, 0.36, 1] }}
+          transition={{ duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
           style={{
             position: "fixed", inset: 0, zIndex: 9999,
             background: "#051F20",
@@ -52,7 +58,7 @@ export default function LoadingScreen({ onComplete }: Props) {
           <motion.div
             initial={{ scale: 0.7, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            transition={{ duration: 0.6, ease: [0.22, 0.61, 0.36, 1] }}
+            transition={{ duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
             style={{
               width: 72, height: 72, borderRadius: 20,
               background: "linear-gradient(135deg, #163832, #8EB69B)",
@@ -69,7 +75,7 @@ export default function LoadingScreen({ onComplete }: Props) {
           <motion.p
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
+            transition={{ delay: 0.15, duration: 0.45, ease: [0.22, 0.61, 0.36, 1] }}
             style={{
               color: "rgba(218,241,222,0.5)",
               fontSize: 13, fontFamily: "Inter, sans-serif",
@@ -86,14 +92,14 @@ export default function LoadingScreen({ onComplete }: Props) {
               background: "rgba(218,241,222,0.1)",
               borderRadius: 2, overflow: "hidden",
             }}>
-              <motion.div
+              <div
                 style={{
                   height: "100%",
                   background: "linear-gradient(90deg, #235347, #8EB69B)",
                   borderRadius: 2,
                   width: `${progress}%`,
+                  transition: "width 0.03s linear",
                 }}
-                transition={{ ease: "linear" }}
               />
             </div>
             <p style={{
