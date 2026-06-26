@@ -12,7 +12,7 @@ import { trackEvent } from "@/lib/supabase";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 const GAP  = 12;   // px gap between columns
-const CARD_H = "clamp(290px, 40vh, 400px)"; // outer carousel height
+const CARD_H = "clamp(320px, 46vh, 460px)"; // outer carousel height
 
 // ─── Card entrance animation ─────────────────────────────────────────────────
 const colVariants = {
@@ -125,8 +125,8 @@ function useInfiniteCarousel(trackRef: React.RefObject<HTMLDivElement | null>) {
     };
     init();
 
-    const FRICTION  = 0.91;
-    const AUTO_SPD  = 0.55;
+    const FRICTION  = 0.94;   // higher = slower deceleration (was 0.91)
+    const AUTO_SPD  = 0.35;   // slower auto-scroll (was 0.55)
 
     const tick = () => {
       // Auto-scroll when idle
@@ -165,8 +165,8 @@ function useInfiniteCarousel(trackRef: React.RefObject<HTMLDivElement | null>) {
       e.preventDefault();
       resetIdleTimer();
       const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      vel.current += (e.deltaMode === 1 ? d * 30 : d) * 0.5;
-      vel.current = Math.max(-90, Math.min(90, vel.current));
+      vel.current += (e.deltaMode === 1 ? d * 30 : d) * 0.18;  // was 0.5 — much gentler
+      vel.current = Math.max(-40, Math.min(40, vel.current));   // tighter cap (was ±90)
       go();
     };
 
@@ -211,7 +211,7 @@ function useInfiniteCarousel(trackRef: React.RefObject<HTMLDivElement | null>) {
       track.releasePointerCapture(e.pointerId);
       track.style.cursor = "grab";
       // Cap release velocity for smoothness
-      vel.current = Math.max(-60, Math.min(60, vel.current));
+      vel.current = Math.max(-30, Math.min(30, vel.current));
       go();
     };
 
@@ -254,8 +254,8 @@ function useInfiniteCarousel(trackRef: React.RefObject<HTMLDivElement | null>) {
 
 function ProfileCardContent() {
   return (
-    <div className="p-5 flex flex-col gap-3 h-full">
-      <div className="flex items-center gap-3">
+    <div className="p-4 flex flex-col gap-2 h-full">
+      <div className="flex items-center gap-3 flex-shrink-0">
         <div className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
           style={{ background: "linear-gradient(135deg,#163832,#8EB69B)", color: "#DAF1DE" }}>NK</div>
         <div>
@@ -263,14 +263,14 @@ function ProfileCardContent() {
           <p className="card-body text-xs">AI &amp; ML Engineer</p>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 flex-shrink-0">
         <span className="w-2 h-2 rounded-full flex-shrink-0" style={{ background:"#4ade80", boxShadow:"0 0 6px #4ade80" }} />
         <span className="card-body text-xs">Available for projects</span>
       </div>
-      <p className="card-body text-xs flex-1 leading-relaxed">
+      <p className="card-body text-xs flex-1 min-h-0 leading-relaxed overflow-hidden">
         I build intelligent products at the intersection of AI and exceptional UX.
       </p>
-      <div className="flex items-center gap-1.5">
+      <div className="flex items-center gap-1.5 flex-shrink-0">
         <MapPin size={11} style={{ color:"rgba(218,241,222,0.4)" }} />
         <span className="card-body text-xs">{personalInfo.location}</span>
       </div>
@@ -280,11 +280,11 @@ function ProfileCardContent() {
 
 function HireMeCardContent({ onClick }: { onClick: () => void }) {
   return (
-    <div className="p-5 flex flex-col gap-3 h-full">
-      <div className="card-label"><ExternalLink size={10} />Let&apos;s work together</div>
-      <p className="card-title" style={{ fontSize: 20 }}>Hire Me</p>
-      <p className="card-body text-xs flex-1">Looking for an AI engineer or full-stack developer.</p>
-      <button onClick={onClick} className="card-btn" style={{ justifyContent: "center" }}>
+    <div className="p-4 flex flex-col gap-2 h-full">
+      <div className="card-label flex-shrink-0"><ExternalLink size={10} />Let&apos;s work together</div>
+      <p className="card-title flex-shrink-0" style={{ fontSize: 20 }}>Hire Me</p>
+      <p className="card-body text-xs flex-1 min-h-0 overflow-hidden">Looking for an AI engineer or full-stack developer.</p>
+      <button onClick={onClick} className="card-btn flex-shrink-0" style={{ justifyContent: "center" }}>
         <Mail size={13} />Get in touch
       </button>
     </div>
@@ -293,14 +293,14 @@ function HireMeCardContent({ onClick }: { onClick: () => void }) {
 
 function ContactCardContent({ onClick }: { onClick: () => void }) {
   return (
-    <div className="p-5 flex flex-col gap-3 h-full">
-      <div className="card-label"><Briefcase size={10} />Contact</div>
-      <div className="flex flex-col gap-1.5 flex-1">
+    <div className="p-4 flex flex-col gap-2 h-full">
+      <div className="card-label flex-shrink-0"><Briefcase size={10} />Contact</div>
+      <div className="flex flex-col gap-1 flex-1 min-h-0 overflow-hidden">
         <a href={`mailto:${personalInfo.email}`} className="card-body text-xs hover:underline truncate"
           onClick={() => trackEvent("github_click")}>{personalInfo.email}</a>
         <p className="card-body text-xs">{personalInfo.location}</p>
       </div>
-      <div className="flex gap-2 mt-auto">
+      <div className="flex gap-2 flex-shrink-0">
         {([
           { icon: Github,    href: personalInfo.github,    event: "github_click"   as const },
           { icon: Linkedin,  href: personalInfo.linkedin,  event: "linkedin_click" as const },
@@ -321,20 +321,20 @@ function ContactCardContent({ onClick }: { onClick: () => void }) {
 function BookingCardContent({ onClick }: { onClick: () => void }) {
   const slots = ["Mon–Fri  10 AM", "Mon–Fri  2 PM", "Sat  11 AM"];
   return (
-    <div className="p-5 flex flex-col gap-3 h-full">
-      <div className="card-label"><Calendar size={10} />Free 30-min call</div>
-      <p className="card-title" style={{ fontSize: 20 }}>Book a Call</p>
-      <p className="card-body text-xs">No commitment — just a chat about your project.</p>
-      <div className="flex flex-col gap-1.5 flex-1">
+    <div className="p-4 flex flex-col gap-2 h-full">
+      <div className="card-label flex-shrink-0"><Calendar size={10} />Free 30-min call</div>
+      <p className="card-title flex-shrink-0" style={{ fontSize: 20 }}>Book a Call</p>
+      <p className="card-body text-xs flex-shrink-0">No commitment — just a chat about your project.</p>
+      <div className="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
         {slots.map(s => (
-          <div key={s} className="flex items-center gap-2 px-3 py-2 rounded-xl"
+          <div key={s} className="flex items-center gap-2 px-3 py-1.5 rounded-xl flex-shrink-0"
             style={{ background:"rgba(35,83,71,0.35)", border:"1px solid rgba(218,241,222,0.1)" }}>
             <Clock size={11} style={{ color:"#8EB69B", flexShrink: 0 }} />
             <span className="card-body text-xs">{s}</span>
           </div>
         ))}
       </div>
-      <button onClick={onClick} className="card-btn" style={{ justifyContent: "center" }}>
+      <button onClick={onClick} className="card-btn flex-shrink-0" style={{ justifyContent: "center" }}>
         <Calendar size={13} />Schedule 30 min
       </button>
     </div>
@@ -344,19 +344,19 @@ function BookingCardContent({ onClick }: { onClick: () => void }) {
 function FeaturedProjectCardContent() {
   const p = projects[0];
   return (
-    <div className="p-5 flex flex-col gap-3 h-full">
-      <div className="relative rounded-xl overflow-hidden flex-shrink-0" style={{ height: 80 }}>
+    <div className="p-4 flex flex-col gap-2 h-full">
+      <div className="relative rounded-xl overflow-hidden flex-shrink-0" style={{ height: 72 }}>
         <div className="absolute inset-0" style={{ background:"linear-gradient(135deg,rgba(22,56,50,0.6),rgba(142,182,155,0.15))" }} />
         <div className="absolute inset-0" style={{ backgroundImage:"linear-gradient(rgba(35,83,71,0.22) 1px,transparent 1px),linear-gradient(90deg,rgba(35,83,71,0.22) 1px,transparent 1px)", backgroundSize:"20px 20px" }} />
         <div className="absolute inset-0 flex items-center justify-center text-3xl select-none">🛡️</div>
       </div>
-      <div className="card-label"><Sparkles size={10} />Featured</div>
-      <p className="card-title" style={{ fontSize: 16, lineHeight: 1.3 }}>{p.title}</p>
-      <p className="card-body text-xs flex-1 line-clamp-2">{p.description}</p>
-      <div className="flex flex-wrap gap-1.5">
+      <div className="card-label flex-shrink-0"><Sparkles size={10} />Featured</div>
+      <p className="card-title flex-shrink-0" style={{ fontSize: 16, lineHeight: 1.3 }}>{p.title}</p>
+      <p className="card-body text-xs flex-1 min-h-0 overflow-hidden line-clamp-2">{p.description}</p>
+      <div className="flex flex-wrap gap-1.5 flex-shrink-0">
         {p.tech.slice(0,3).map(t => <span key={t} className="tech-badge" style={{ fontSize: 10 }}>{t}</span>)}
       </div>
-      <a href={p.github} target="_blank" rel="noopener noreferrer" className="card-btn"
+      <a href={p.github} target="_blank" rel="noopener noreferrer" className="card-btn flex-shrink-0"
         style={{ justifyContent: "center" }} onClick={() => trackEvent("project_click")}>
         <Github size={13} />GitHub
       </a>
@@ -366,10 +366,10 @@ function FeaturedProjectCardContent() {
 
 function GitHubCardContent() {
   return (
-    <div className="p-5 flex flex-col gap-3 h-full">
-      <div className="card-label"><Github size={10} />Open Source</div>
-      <p className="card-title" style={{ fontSize: 18 }}>GitHub</p>
-      <div className="flex gap-4 flex-1 items-center">
+    <div className="p-4 flex flex-col gap-2 h-full">
+      <div className="card-label flex-shrink-0"><Github size={10} />Open Source</div>
+      <p className="card-title flex-shrink-0" style={{ fontSize: 18 }}>GitHub</p>
+      <div className="flex gap-4 flex-1 min-h-0 items-center">
         {[["20+","Repos"],["500+","Commits"]].map(([v,l]) => (
           <div key={l} className="text-center">
             <p style={{ fontSize: 18, fontWeight: 800, color:"#8EB69B", fontFamily:"Space Grotesk,sans-serif" }}>{v}</p>
@@ -377,7 +377,7 @@ function GitHubCardContent() {
           </div>
         ))}
       </div>
-      <a href={personalInfo.github} target="_blank" rel="noopener noreferrer" className="card-btn"
+      <a href={personalInfo.github} target="_blank" rel="noopener noreferrer" className="card-btn flex-shrink-0"
         style={{ justifyContent: "center" }} onClick={() => trackEvent("github_click")}>
         Browse <ExternalLink size={13} />
       </a>
@@ -387,11 +387,11 @@ function GitHubCardContent() {
 
 function LinkedInCardContent() {
   return (
-    <div className="p-5 flex flex-col gap-3 h-full">
-      <div className="card-label"><Linkedin size={10} />Network</div>
-      <p className="card-title" style={{ fontSize: 18 }}>LinkedIn</p>
-      <p className="card-body text-xs flex-1">Open to freelance, full-time, and consulting roles.</p>
-      <a href={personalInfo.linkedin} target="_blank" rel="noopener noreferrer" className="card-btn"
+    <div className="p-4 flex flex-col gap-2 h-full">
+      <div className="card-label flex-shrink-0"><Linkedin size={10} />Network</div>
+      <p className="card-title flex-shrink-0" style={{ fontSize: 18 }}>LinkedIn</p>
+      <p className="card-body text-xs flex-1 min-h-0 overflow-hidden">Open to freelance, full-time, and consulting roles.</p>
+      <a href={personalInfo.linkedin} target="_blank" rel="noopener noreferrer" className="card-btn flex-shrink-0"
         style={{ justifyContent: "center" }} onClick={() => trackEvent("linkedin_click")}>
         Connect <ChevronRight size={13} />
       </a>
@@ -402,17 +402,17 @@ function LinkedInCardContent() {
 function ProjectsCardContent() {
   const icons = ["🛡️","🚀","🤖","📞"];
   return (
-    <div className="p-5 flex flex-col gap-3 h-full">
-      <div className="card-label"><Code2 size={10} />Portfolio</div>
-      <p className="card-title" style={{ fontSize: 20 }}>My Projects</p>
-      <div className="flex flex-col gap-2 flex-1 overflow-hidden">
+    <div className="p-4 flex flex-col gap-2 h-full">
+      <div className="card-label flex-shrink-0"><Code2 size={10} />Portfolio</div>
+      <p className="card-title flex-shrink-0" style={{ fontSize: 20 }}>My Projects</p>
+      <div className="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
         {projects.slice(0,4).map((p, i) => (
           <a key={p.id} href={p.github} target="_blank" rel="noopener noreferrer"
-            className="flex items-center gap-3 p-2.5 rounded-xl group"
+            className="flex items-center gap-3 px-2.5 py-2 rounded-xl flex-shrink-0"
             style={{ background:"rgba(35,83,71,0.3)", transition:"background 0.2s ease" }}
             onClick={() => trackEvent("project_click")}
           >
-            <span className="text-xl flex-shrink-0 select-none">{icons[i]}</span>
+            <span className="text-lg flex-shrink-0 select-none">{icons[i]}</span>
             <div className="flex-1 min-w-0">
               <p className="card-title truncate" style={{ fontSize: 13 }}>{p.title}</p>
               <p className="card-body text-xs truncate">{p.tech.slice(0,2).join(" · ")}</p>
@@ -421,7 +421,7 @@ function ProjectsCardContent() {
           </a>
         ))}
       </div>
-      <a href={personalInfo.github} target="_blank" rel="noopener noreferrer" className="card-btn"
+      <a href={personalInfo.github} target="_blank" rel="noopener noreferrer" className="card-btn flex-shrink-0"
         style={{ justifyContent: "center" }} onClick={() => trackEvent("github_click")}>
         All projects <ArrowRight size={13} />
       </a>
@@ -431,11 +431,11 @@ function ProjectsCardContent() {
 
 function ResumeCardContent() {
   return (
-    <div className="p-5 flex flex-col gap-3 h-full">
-      <div className="card-label"><Download size={10} />Resume</div>
-      <p className="card-title" style={{ fontSize: 18 }}>Download CV</p>
-      <p className="card-body text-xs flex-1">AI Engineer · Full Stack · ML</p>
-      <a href={personalInfo.resume} download className="card-btn" style={{ justifyContent: "center" }}
+    <div className="p-4 flex flex-col gap-2 h-full">
+      <div className="card-label flex-shrink-0"><Download size={10} />Resume</div>
+      <p className="card-title flex-shrink-0" style={{ fontSize: 18 }}>Download CV</p>
+      <p className="card-body text-xs flex-1 min-h-0 overflow-hidden">AI Engineer · Full Stack · ML</p>
+      <a href={personalInfo.resume} download className="card-btn flex-shrink-0" style={{ justifyContent: "center" }}
         onClick={() => trackEvent("resume_download")}>
         <Download size={13} />PDF
       </a>
@@ -446,13 +446,13 @@ function ResumeCardContent() {
 function LatestBuildCardContent() {
   const p = projects[1];
   return (
-    <div className="p-5 flex flex-col gap-3 h-full">
-      <div className="card-label"><Sparkles size={10} />Latest</div>
-      <p className="card-title" style={{ fontSize: 14, lineHeight: 1.3 }}>{p.title}</p>
-      <div className="flex flex-wrap gap-1">
+    <div className="p-4 flex flex-col gap-2 h-full">
+      <div className="card-label flex-shrink-0"><Sparkles size={10} />Latest</div>
+      <p className="card-title flex-shrink-0" style={{ fontSize: 14, lineHeight: 1.3 }}>{p.title}</p>
+      <div className="flex flex-wrap gap-1 flex-1 min-h-0 overflow-hidden content-start">
         {p.tech.slice(0,2).map(t => <span key={t} className="tech-badge" style={{ fontSize: 10 }}>{t}</span>)}
       </div>
-      <a href={p.github} target="_blank" rel="noopener noreferrer" className="card-btn mt-auto"
+      <a href={p.github} target="_blank" rel="noopener noreferrer" className="card-btn flex-shrink-0"
         style={{ justifyContent: "center" }} onClick={() => trackEvent("project_click")}>
         View <ExternalLink size={13} />
       </a>

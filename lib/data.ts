@@ -10,11 +10,11 @@ export const personalInfo = {
   tagline: "I build intelligent products powered by AI.",
   about:
     "Passionate AI Engineer with experience in Machine Learning, Full Stack Development, Computer Vision and LLMs. I love building products that solve real problems and push the boundaries of what's possible.",
-  email: "nithinkumaru@gmail.com",
-  phone: "+91 98765 43210",
+  email: "nithinkumaru32@outlook.com",
+  phone: "+91 8553293346",
   location: "Bangalore, India",
   github: "https://github.com/NithinkumarU",
-  linkedin: "https://linkedin.com/in/nithinkumaru",
+  linkedin: "https://www.linkedin.com/in/nithinkumaru32",
   instagram: "https://instagram.com/nithinkumaru",
   resume: "/resume.pdf",
   stats: {

@@ -171,6 +171,8 @@ html, body {
   position: relative;
   cursor: grab;
   will-change: transform;
+  /* Ensure inner flex content never gets clipped by adding min-height */
+  min-height: 0;
 }
 
 .card:active {
