@@ -27,7 +27,7 @@ const socials = [
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
 export default function Home() {
-  const [loaded,       setLoaded]       = useState(false);
+  const [loaded,       setLoaded]       = useState(true);
   const [chatOpen,     setChatOpen]     = useState(false);
   const [shareOpen,    setShareOpen]    = useState(false);
   const [contactOpen,  setContactOpen]  = useState(false);
@@ -50,8 +50,7 @@ export default function Home() {
 
   return (
     <>
-      {/* Loading screen — renders on top until complete */}
-      {!loaded && <LoadingScreen onComplete={() => setLoaded(true)} />}
+      {/* Loading screen removed — caused infinite 0% hang on production */}
 
       {/* Custom cursor — desktop only */}
       <CustomCursor />
