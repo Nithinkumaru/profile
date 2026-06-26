@@ -59,8 +59,9 @@ export default function Home() {
       {/* Background */}
       <Background />
 
-      {/* Main layout */}
-      <div className="relative z-10 flex flex-col md:h-screen overflow-x-hidden" style={{ minHeight: "100dvh" }}>
+      {/* Main layout — NO overflow-x:hidden here; iOS Safari turns any overflow:hidden
+          on a container into a scroll trap that kills body scroll */}
+      <div className="relative z-10 flex flex-col md:h-screen" style={{ minHeight: "100dvh" }}>
 
         {/* ── TOP BAR ── */}
         <div className="flex items-center justify-between px-5 pt-5 flex-shrink-0">

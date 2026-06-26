@@ -112,7 +112,8 @@ function useInfiniteCarousel(trackRef: React.RefObject<HTMLDivElement | null>) {
 
   useEffect(() => {
     const track = trackRef.current;
-    if (!track) return;
+    // Skip on mobile — pointer capture + wheel preventDefault kill native touch scroll
+    if (!track || window.matchMedia("(max-width: 768px)").matches) return;
     const st = state.current;
 
     // Measure single set width after layout

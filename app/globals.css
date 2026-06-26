@@ -14,22 +14,28 @@ html, body {
   height: 100%;
   font-family: 'Inter', system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -webkit-overflow-scrolling: touch;
 }
 
-/* Desktop: page is carousel-driven, no natural scroll needed */
+/* Desktop: page is carousel-driven, lock native scroll */
 @media (min-width: 769px) {
   html, body {
     overflow: hidden;
   }
 }
 
-/* Mobile: allow natural vertical scroll */
+/* Mobile: fully native vertical scroll — do NOT set overflow-x:hidden on html/body
+   (iOS Safari treats it as overflow:hidden and kills both axes).
+   Use overscroll-behavior-x to stop horizontal drift instead. */
 @media (max-width: 768px) {
-  html, body {
+  html {
     overflow-y: auto;
-    overflow-x: hidden;
-    touch-action: pan-y;
+    overscroll-behavior-x: none;
+    -webkit-overflow-scrolling: touch;
+  }
+  body {
+    overflow-y: auto;
+    overscroll-behavior-x: none;
+    -webkit-overflow-scrolling: touch;
   }
 }
 
@@ -687,8 +693,9 @@ html, body {
   gap: 12px;
   padding: 0 16px 120px;
   width: 100%;
-  max-width: 100%;
-  overflow-x: hidden;
+  max-width: 100vw;
+  /* Allow vertical scroll gestures to pass through to document */
+  touch-action: pan-y;
 }
 
 .mobile-card {
