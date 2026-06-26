@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Github, Linkedin, Instagram, Mail, Share2, Flame } from "lucide-react";
+import { Github, Linkedin, Instagram, Mail, Share2, Flame, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 
 import Background    from "@/components/Background";
@@ -60,7 +60,7 @@ export default function Home() {
       <Background />
 
       {/* Main layout */}
-      <div className="relative z-10 flex flex-col h-screen" style={{ userSelect: "none" }}>
+      <div className="relative z-10 flex flex-col md:h-screen overflow-x-hidden" style={{ minHeight: "100dvh" }}>
 
         {/* ── TOP BAR ── */}
         <div className="flex items-center justify-between px-5 pt-5 flex-shrink-0">
@@ -88,7 +88,7 @@ export default function Home() {
         </div>
 
         {/* ── PROFILE HEADER ── */}
-        <div className="flex-1 flex flex-col items-center justify-center pb-4 px-4 text-center min-h-0">
+        <div className="md:flex-1 flex flex-col items-center justify-center py-8 md:py-4 px-4 text-center md:min-h-0">
           <div className="flex flex-col items-center gap-3">
 
             {/* Avatar */}
@@ -163,8 +163,8 @@ export default function Home() {
 
         {/* ── CARD CAROUSEL ── */}
         <motion.div
-          className="flex-shrink-0"
-          style={{ paddingBottom: 72 }}
+          className="md:flex-shrink-0"
+          style={{ paddingBottom: 0 }}
           initial={{ opacity: 0, y: 36 }}
           animate={{ opacity: loaded ? 1 : 0, y: loaded ? 0 : 36 }}
           transition={{ duration: 0.65, delay: 0.48, ease: EASE }}
@@ -176,24 +176,41 @@ export default function Home() {
         </motion.div>
       </div>
 
-      {/* ── AI CHAT BUTTON ── */}
-      <motion.button
-        className="ai-btn"
-        onClick={() => setChatOpen(true)}
+      {/* ── AI LAUNCHER (premium floating capsule) ── */}
+      <motion.div
+        className="ai-launcher"
         initial={{ opacity: 0, y: 24 }}
         animate={{ opacity: loaded ? 1 : 0, y: loaded ? 0 : 24 }}
         transition={{ duration: 0.55, delay: 0.65, ease: EASE }}
-        whileHover={{ scale: 1.04, transition: { duration: 0.2 } }}
-        whileTap={{ scale: 0.96 }}
+        aria-label="AI Assistant"
       >
-        <div className="flex gap-1">
-          {[0, 1, 2].map(i => (
-            <div key={i} className="w-1.5 h-1.5 rounded-full"
-              style={{ background: "rgba(218,241,222,0.5)", animation: `typingBounce 1.4s ease-in-out ${i * 0.2}s infinite` }} />
-          ))}
-        </div>
-        <span>Ask me anything</span>
-      </motion.button>
+        <button
+          className="ai-launcher-arrow"
+          aria-label="Previous"
+          onClick={() => setChatOpen(true)}
+        >
+          <ChevronLeft size={16} />
+        </button>
+
+        <button
+          className="ai-launcher-center"
+          onClick={() => setChatOpen(true)}
+          aria-label="Open AI Assistant"
+        >
+          <div className="ai-launcher-icon">
+            <Sparkles size={11} color="#DAF1DE" />
+          </div>
+          <span>Ask me anything</span>
+        </button>
+
+        <button
+          className="ai-launcher-arrow"
+          aria-label="Next"
+          onClick={() => setChatOpen(true)}
+        >
+          <ChevronRight size={16} />
+        </button>
+      </motion.div>
 
       {/* ── OVERLAYS ── */}
       <AnimatePresence>

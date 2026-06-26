@@ -495,10 +495,71 @@ export default function CardGrid({ onContact, onBooking }: Props) {
   const trackRef = useRef<HTMLDivElement>(null);
   const dragging = useInfiniteCarousel(trackRef);
   const [cols]   = useState(() => buildCols(onContact, onBooking));
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 768px)");
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener("change", handler);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
 
   // 3 copies for seamless infinite loop
   const allCols = [...cols, ...cols, ...cols];
 
+  // ── Mobile: vertical stacked cards ──────────────────────────────────────────
+  if (isMobile) {
+    return (
+      <div className="mobile-card-grid">
+        {cols.map((col, i) => {
+          if (col.type === "tall") {
+            return (
+              <motion.div
+                key={col.id}
+                custom={i}
+                variants={colVariants}
+                initial="hidden"
+                animate="visible"
+                className="card mobile-card"
+              >
+                <div className="absolute inset-0 pointer-events-none" style={{ borderRadius: 22, background: "linear-gradient(135deg,rgba(218,241,222,0.04) 0%,transparent 60%)" }} />
+                {col.content}
+              </motion.div>
+            );
+          }
+          return (
+            <div key={col.id} className="mobile-card-pair">
+              <motion.div
+                custom={i}
+                variants={colVariants}
+                initial="hidden"
+                animate="visible"
+                className="card"
+                style={{ minHeight: 180 }}
+              >
+                <div className="absolute inset-0 pointer-events-none" style={{ borderRadius: 22, background: "linear-gradient(135deg,rgba(218,241,222,0.04) 0%,transparent 60%)" }} />
+                {col.top}
+              </motion.div>
+              <motion.div
+                custom={i + 0.5}
+                variants={colVariants}
+                initial="hidden"
+                animate="visible"
+                className="card"
+                style={{ minHeight: 180 }}
+              >
+                <div className="absolute inset-0 pointer-events-none" style={{ borderRadius: 22, background: "linear-gradient(135deg,rgba(218,241,222,0.04) 0%,transparent 60%)" }} />
+                {col.bottom}
+              </motion.div>
+            </div>
+          );
+        })}
+      </div>
+    );
+  }
+
+  // ── Desktop: infinite horizontal carousel ────────────────────────────────────
   return (
     <div style={{ position: "relative", width: "100%" }}>
       {/* Fade masks at edges */}
