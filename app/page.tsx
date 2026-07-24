@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Github, Linkedin, Instagram, Mail, Share2, Flame, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { Github, Linkedin, Instagram, Mail, Share2, Flame, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 
 import Background    from "@/components/Background";
@@ -177,49 +177,29 @@ export default function Home() {
         </motion.div>
       </div>
 
-      {/* ── AI LAUNCHER (premium floating capsule) ── */}
-      <motion.div
-        className="ai-launcher"
-        initial={{ opacity: 0, y: 24 }}
-        animate={{ opacity: loaded ? 1 : 0, y: loaded ? 0 : 24 }}
-        transition={{ duration: 0.55, delay: 0.65, ease: EASE }}
-        aria-label="AI Assistant"
-      >
-        <button
-          className="ai-launcher-arrow"
-          aria-label="Previous"
-          onClick={() => setChatOpen(true)}
-        >
-          <ChevronLeft size={16} />
-        </button>
-
-        <button
-          className="ai-launcher-center"
-          onClick={() => setChatOpen(true)}
-          aria-label="Open AI Assistant"
-        >
-          <div className="ai-launcher-icon">
-            <Sparkles size={11} color="#DAF1DE" />
-          </div>
-          <span>Ask me anything</span>
-        </button>
-
-        <button
-          className="ai-launcher-arrow"
-          aria-label="Next"
-          onClick={() => setChatOpen(true)}
-        >
-          <ChevronRight size={16} />
-        </button>
-      </motion.div>
+      {/* ── AI FAB (floating widget, bottom-right — never overlaps CTAs) ── */}
+      <AnimatePresence>
+        {!chatOpen && (
+          <motion.button
+            key="ai-fab"
+            className="ai-fab"
+            initial={{ opacity: 0, scale: 0.7 }}
+            animate={{ opacity: loaded ? 1 : 0, scale: loaded ? 1 : 0.7 }}
+            exit={{ opacity: 0, scale: 0.7 }}
+            transition={{ duration: 0.3, ease: EASE }}
+            onClick={() => setChatOpen(true)}
+            aria-label="Open AI Assistant"
+            title="Ask me anything"
+          >
+            <Sparkles size={20} />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* ── OVERLAYS ── */}
       <AnimatePresence>
         {chatOpen && (
-          <motion.div key="chat" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            transition={{ duration: 0.28, ease: EASE }} className="fixed inset-0 z-50">
-            <AIAssistant onClose={() => setChatOpen(false)} />
-          </motion.div>
+          <AIAssistant key="chat" onClose={() => setChatOpen(false)} />
         )}
       </AnimatePresence>
 

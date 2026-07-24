@@ -381,29 +381,112 @@ html, body {
   50% { box-shadow: 0 0 24px 6px rgba(35, 83, 71, 0.28); }
 }
 
-/* ========== AI CHAT OVERLAY ========== */
-.chat-overlay {
+/* ========== AI FAB (floating widget, bottom-right) ========== */
+.ai-fab {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 50;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 35% 35%, #8EB69B, #235347);
+  border: 1px solid rgba(218, 241, 222, 0.25);
+  box-shadow: 0 8px 28px rgba(5, 31, 32, 0.5), 0 0 0 1px rgba(218, 241, 222, 0.05) inset;
+  color: #DAF1DE;
+  cursor: pointer;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  animation: fabPulse 3s ease-in-out infinite;
+  will-change: transform;
+}
+
+.ai-fab:hover {
+  transform: scale(1.08);
+  box-shadow: 0 10px 34px rgba(5, 31, 32, 0.6);
+}
+
+.ai-fab:active {
+  transform: scale(0.94);
+}
+
+@keyframes fabPulse {
+  0%, 100% { box-shadow: 0 8px 28px rgba(5,31,32,0.5), 0 0 0 0 rgba(142,182,155,0.25); }
+  50%       { box-shadow: 0 8px 28px rgba(5,31,32,0.5), 0 0 18px 6px rgba(142,182,155,0.35); }
+}
+
+/* ========== AI CHAT WIDGET (expands from the FAB, bottom-right) ========== */
+.chat-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: 59;
+  background: transparent;
+  pointer-events: none;
+}
+
+.chat-panel {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 60;
+  width: 368px;
+  height: min(560px, 70vh);
   display: flex;
   flex-direction: column;
+  background: rgba(11, 43, 38, 0.92);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
+  border: 1px solid rgba(218, 241, 222, 0.16);
+  border-radius: 24px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(218, 241, 222, 0.05) inset;
+  overflow: hidden;
+}
+
+.chat-panel-handle {
+  display: none;
+}
+
+.chat-panel-header {
+  display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding-bottom: 20px;
-  background: radial-gradient(ellipse at 50% 80%, rgba(22, 56, 50, 0.97) 0%, rgba(5, 31, 32, 0.99) 100%);
-  backdrop-filter: blur(40px);
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(218, 241, 222, 0.1);
+  flex-shrink: 0;
+}
+
+.chat-panel-header-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #DAF1DE;
+  font-family: 'Space Grotesk', sans-serif;
+}
+
+.chat-panel-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at 35% 35%, #8EB69B, #235347);
+  color: #DAF1DE;
 }
 
 .chat-messages {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: flex-start;
   gap: 12px;
-  padding: 80px 24px 24px;
-  max-width: 560px;
+  padding: 16px;
   width: 100%;
   overflow-y: auto;
 }
@@ -428,11 +511,12 @@ html, body {
 
 .chat-input-row {
   width: 100%;
-  max-width: 560px;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 0 16px;
+  gap: 10px;
+  padding: 12px 14px 14px;
+  border-top: 1px solid rgba(218, 241, 222, 0.08);
 }
 
 .chat-input {
@@ -652,89 +736,12 @@ html, body {
   border-radius: 3px;
 }
 
-/* ========== AI LAUNCHER (premium floating capsule) ========== */
-.ai-launcher {
-  position: fixed;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 100;
-  display: flex;
-  align-items: center;
-  gap: 0;
-  background: rgba(255, 255, 255, 0.07);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(218, 241, 222, 0.18);
-  border-radius: 50px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(218,241,222,0.06) inset;
-  animation: launcherFloat 4s ease-in-out infinite;
-  white-space: nowrap;
-}
-
-.ai-launcher-arrow {
-  width: 44px;
-  height: 44px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: rgba(218, 241, 222, 0.5);
-  cursor: pointer;
-  border-radius: 50%;
-  transition: color 0.2s ease, background 0.2s ease;
-  flex-shrink: 0;
-}
-
-.ai-launcher-arrow:hover {
-  color: #DAF1DE;
-  background: rgba(218, 241, 222, 0.08);
-}
-
-.ai-launcher-arrow:active,
-.ai-launcher-center:active {
-  transform: scale(0.96);
-}
-
-.ai-launcher-center {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  padding: 10px 18px;
-  cursor: pointer;
-  color: rgba(218, 241, 222, 0.82);
-  font-size: 13px;
-  font-weight: 500;
-  letter-spacing: 0.03em;
-  transition: color 0.2s ease;
-  border-left: 1px solid rgba(218, 241, 222, 0.1);
-  border-right: 1px solid rgba(218, 241, 222, 0.1);
-}
-
-.ai-launcher-center:hover {
-  color: #DAF1DE;
-}
-
-.ai-launcher-icon {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  background: radial-gradient(circle at 40% 40%, #8EB69B, #235347);
-  box-shadow: 0 0 10px rgba(142, 182, 155, 0.5);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  animation: iconGlow 2.5s ease-in-out infinite;
-}
-
-@keyframes launcherFloat {
-  0%, 100% { transform: translateX(-50%) translateY(0px); }
-  50%       { transform: translateX(-50%) translateY(-5px); }
-}
-
-@keyframes iconGlow {
-  0%, 100% { box-shadow: 0 0 8px rgba(142, 182, 155, 0.4); }
-  50%       { box-shadow: 0 0 18px rgba(142, 182, 155, 0.75); }
+/* ========== AI WIDGET — RESPONSIVE SIZING ========== */
+/* Tablet: narrower panel */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .chat-panel {
+    width: 320px;
+  }
 }
 
 /* ========== MOBILE ========== */
@@ -753,13 +760,37 @@ html, body {
     padding: 0 16px 12px;
   }
 
-  .ai-launcher {
-    bottom: 20px;
+  .ai-fab {
+    bottom: 16px;
+    right: 16px;
+    width: 52px;
+    height: 52px;
   }
 
-  .ai-launcher-center {
-    font-size: 12px;
-    padding: 10px 14px;
+  /* Expanded widget becomes a full-width bottom sheet on mobile */
+  .chat-panel {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 78vh;
+    border-radius: 24px 24px 0 0;
+  }
+
+  .chat-panel-handle {
+    display: block;
+    width: 36px;
+    height: 4px;
+    border-radius: 3px;
+    background: rgba(218, 241, 222, 0.25);
+    margin: 10px auto 0;
+    flex-shrink: 0;
+  }
+
+  .chat-backdrop {
+    background: rgba(5, 31, 32, 0.6);
+    backdrop-filter: blur(6px);
+    pointer-events: auto;
   }
 
   .share-modal {

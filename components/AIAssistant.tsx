@@ -2,7 +2,9 @@
 
 import { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Mic, X, Send } from "lucide-react";
+import { Mic, X, Send, Sparkles } from "lucide-react";
+
+const EASE = [0.22, 0.61, 0.36, 1] as const;
 
 interface Message {
   role: "assistant" | "user";
@@ -73,92 +75,100 @@ export default function AIAssistant({ onClose }: { onClose: () => void }) {
   };
 
   return (
-    <motion.div
-      className="chat-overlay"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      {/* Close button */}
-      <motion.button
-        className="absolute top-6 right-6 w-10 h-10 rounded-full flex items-center justify-center text-white/60 hover:text-white transition-colors"
-        style={{ background: "rgba(255,255,255,0.1)", border: "1px solid rgba(255,255,255,0.15)" }}
-        onClick={onClose}
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ delay: 0.2 }}
-      >
-        <X className="w-4 h-4" />
-      </motion.button>
-
-      {/* Messages */}
-      <div className="chat-messages">
-        <AnimatePresence initial={false}>
-          {messages.map((msg, i) => (
-            <motion.div
-              key={i}
-              className={`chat-bubble ${msg.role === "user" ? "chat-bubble-user" : ""}`}
-              initial={{ opacity: 0, y: 10, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-              style={{ whiteSpace: "pre-line" }}
-            >
-              {msg.text}
-            </motion.div>
-          ))}
-
-          {thinking && (
-            <motion.div
-              className="chat-bubble flex gap-1.5 items-center"
-              style={{ width: "fit-content" }}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-            >
-              <span className="typing-dot" />
-              <span className="typing-dot" />
-              <span className="typing-dot" />
-            </motion.div>
-          )}
-        </AnimatePresence>
-        <div ref={bottomRef} />
-      </div>
-
-      {/* Input row */}
+    <>
+      {/* Backdrop — inert on desktop/tablet (widget never blocks the rest of the
+          page), becomes a real dismissible scrim on mobile behind the bottom sheet */}
       <motion.div
-        className="chat-input-row"
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.15 }}
+        className="chat-backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.25 }}
+        onClick={onClose}
+      />
+
+      <motion.div
+        className="chat-panel"
+        initial={{ opacity: 0, scale: 0.95, y: 20 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 20 }}
+        transition={{ duration: 0.28, ease: EASE }}
+        role="dialog"
+        aria-label="AI Assistant chat"
       >
-        <button
-          className="chat-icon-btn" disabled
-          title="Voice input coming soon" aria-label="Voice input coming soon"
-        >
-          <Mic className="w-5 h-5" />
-        </button>
+        <div className="chat-panel-handle" />
 
-        <input
-          ref={inputRef}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={onKey}
-          placeholder="Ask me anything..."
-          className="chat-input"
-        />
+        {/* Header */}
+        <div className="chat-panel-header">
+          <div className="chat-panel-header-title">
+            <div className="chat-panel-avatar"><Sparkles size={12} /></div>
+            <span>AI Assistant</span>
+          </div>
+          <button className="chat-icon-btn" onClick={onClose} aria-label="Close chat">
+            <X className="w-4 h-4" />
+          </button>
+        </div>
 
-        <button
-          className="chat-icon-btn"
-          onClick={send}
-          style={input.trim() ? { background: "rgba(108,62,244,0.5)", borderColor: "rgba(108,62,244,0.6)" } : {}}
-        >
-          <Send className="w-4 h-4" />
-        </button>
+        {/* Messages */}
+        <div className="chat-messages">
+          <AnimatePresence initial={false}>
+            {messages.map((msg, i) => (
+              <motion.div
+                key={i}
+                className={`chat-bubble ${msg.role === "user" ? "chat-bubble-user" : ""}`}
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                style={{ whiteSpace: "pre-line" }}
+              >
+                {msg.text}
+              </motion.div>
+            ))}
 
-        <button className="chat-icon-btn" onClick={onClose}>
-          <X className="w-4 h-4" />
-        </button>
+            {thinking && (
+              <motion.div
+                className="chat-bubble flex gap-1.5 items-center"
+                style={{ width: "fit-content" }}
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+              >
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+                <span className="typing-dot" />
+              </motion.div>
+            )}
+          </AnimatePresence>
+          <div ref={bottomRef} />
+        </div>
+
+        {/* Input row */}
+        <div className="chat-input-row">
+          <button
+            className="chat-icon-btn" disabled
+            title="Voice input coming soon" aria-label="Voice input coming soon"
+          >
+            <Mic className="w-5 h-5" />
+          </button>
+
+          <input
+            ref={inputRef}
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={onKey}
+            placeholder="Ask me anything..."
+            className="chat-input"
+          />
+
+          <button
+            className="chat-icon-btn"
+            onClick={send}
+            aria-label="Send message"
+            style={input.trim() ? { background: "rgba(108,62,244,0.5)", borderColor: "rgba(108,62,244,0.6)" } : {}}
+          >
+            <Send className="w-4 h-4" />
+          </button>
+        </div>
       </motion.div>
-    </motion.div>
+    </>
   );
 }
