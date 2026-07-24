@@ -32,6 +32,8 @@ export type AnalyticsEvent =
   | "resume_download"
   | "github_click"
   | "linkedin_click"
+  | "instagram_click"
+  | "email_click"
   | "project_click"
   | "contact_submit"
   | "booking_submit";

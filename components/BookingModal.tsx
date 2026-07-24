@@ -7,7 +7,7 @@ import { submitBooking, trackEvent } from "@/lib/supabase";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 
-interface Props { onClose: () => void }
+interface Props { onClose: () => void; initialTime?: string }
 
 const TIMES = [
   "09:00 AM","10:00 AM","11:00 AM",
@@ -26,8 +26,8 @@ function validate(f: typeof INITIAL) {
   return e;
 }
 
-export default function BookingModal({ onClose }: Props) {
-  const [form,   setForm]   = useState(INITIAL);
+export default function BookingModal({ onClose, initialTime }: Props) {
+  const [form,   setForm]   = useState(() => ({ ...INITIAL, preferred_time: initialTime ?? "" }));
   const [errors, setErrors] = useState<Partial<typeof INITIAL>>({});
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [errMsg, setErrMsg] = useState("");

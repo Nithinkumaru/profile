@@ -10,6 +10,20 @@
   box-sizing: border-box;
 }
 
+/* ========== ACCESSIBILITY: keyboard focus & disabled state ========== */
+a:focus-visible,
+button:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid #8EB69B;
+  outline-offset: 3px;
+  border-radius: 12px;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 html, body {
   height: 100%;
   font-family: 'Inter', system-ui, sans-serif;
@@ -206,12 +220,14 @@ html, body {
 .card-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
   background: #235347;
   color: #DAF1DE;
   border: none;
   border-radius: 50px;
   padding: 9px 20px;
+  min-height: 44px;
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -224,6 +240,45 @@ html, body {
 .card-btn:hover {
   background: #163832;
   transform: scale(1.03);
+  box-shadow: 0 8px 22px rgba(5,31,32,0.5);
+}
+
+.card-btn:active {
+  transform: scale(0.97);
+}
+
+/* Clickable "Book a Call" time-slot chip */
+.slot-chip {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  min-height: 40px;
+  width: 100%;
+  border-radius: 12px;
+  background: rgba(35,83,71,0.35);
+  border: 1px solid rgba(218,241,222,0.1);
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.22s ease;
+}
+
+.slot-chip:hover {
+  background: rgba(35,83,71,0.55);
+  border-color: rgba(218,241,222,0.24);
+  transform: scale(1.02);
+}
+
+.slot-chip:active {
+  transform: scale(0.98);
+}
+
+.slot-chip.selected {
+  background: #235347;
+  border-color: rgba(218,241,222,0.4);
+  box-shadow: 0 4px 16px rgba(35,83,71,0.45);
 }
 
 .card-btn-outline {
@@ -284,6 +339,10 @@ html, body {
   background: rgba(35, 83, 71, 0.7);
   border-color: rgba(218, 241, 222, 0.28);
   transform: scale(1.05);
+}
+
+.top-btn:active {
+  transform: scale(0.95);
 }
 
 /* ========== AI CHAT BUTTON ========== */
@@ -417,6 +476,10 @@ html, body {
   color: #DAF1DE;
 }
 
+.chat-icon-btn:active {
+  transform: scale(0.95);
+}
+
 /* ========== SHARE MODAL ========== */
 .share-overlay {
   position: fixed;
@@ -491,6 +554,7 @@ html, body {
 .social-link {
   width: 36px;
   height: 36px;
+  flex-shrink: 0;
   border-radius: 50%;
   background: rgba(11, 43, 38, 0.7);
   border: 1px solid rgba(218, 241, 222, 0.18);
@@ -508,6 +572,17 @@ html, body {
   color: #DAF1DE;
   border-color: rgba(218, 241, 222, 0.32);
   transform: scale(1.1);
+  box-shadow: 0 4px 16px rgba(35,83,71,0.4);
+}
+
+.social-link:active {
+  transform: scale(0.95);
+}
+
+/* Compact variant used inside cards — grows back to a full tap target on mobile */
+.social-link-sm {
+  width: 30px;
+  height: 30px;
 }
 
 /* ========== TYPING INDICATOR ========== */
@@ -615,6 +690,11 @@ html, body {
   background: rgba(218, 241, 222, 0.08);
 }
 
+.ai-launcher-arrow:active,
+.ai-launcher-center:active {
+  transform: scale(0.96);
+}
+
 .ai-launcher-center {
   display: flex;
   align-items: center;
@@ -685,6 +765,13 @@ html, body {
   .share-modal {
     width: calc(100vw - 32px);
     max-width: 360px;
+  }
+
+  /* Guarantee 44px minimum tap targets on touch devices */
+  .social-link,
+  .social-link-sm {
+    width: 44px;
+    height: 44px;
   }
 }
 

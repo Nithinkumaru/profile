@@ -131,7 +131,10 @@ export default function AIAssistant({ onClose }: { onClose: () => void }) {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.15 }}
       >
-        <button className="chat-icon-btn">
+        <button
+          className="chat-icon-btn" disabled
+          title="Voice input coming soon" aria-label="Voice input coming soon"
+        >
           <Mic className="w-5 h-5" />
         </button>
 

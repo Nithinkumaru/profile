@@ -108,6 +108,7 @@ function useInfiniteCarousel(trackRef: React.RefObject<HTMLDivElement | null>) {
   const state     = useRef({
     lastX: 0, lastT: 0, raf: 0,
     idleTimer: 0, autoScroll: false,
+    down: false, downX: 0, downY: 0,
   });
 
   useEffect(() => {
@@ -171,20 +172,37 @@ function useInfiniteCarousel(trackRef: React.RefObject<HTMLDivElement | null>) {
     };
 
     // ── Pointer drag ───────────────────────
+    // A real drag only "engages" (and captures the pointer) once the pointer
+    // has moved past DRAG_THRESHOLD. Below that, we leave the pointer alone
+    // so the browser's normal click synthesis still targets the element under
+    // the cursor — capturing on every pointerdown ate clicks on every button
+    // and link inside the carousel (Get in touch, GitHub, slot chips, etc.).
+    const DRAG_THRESHOLD = 6; // px
+
     const onDown = (e: PointerEvent) => {
       if (e.button !== 0) return;
-      dragging.current = true;
+      st.down = true;
       resetIdleTimer();
       st.lastX = e.clientX;
       st.lastT = performance.now();
+      st.downX = e.clientX;
+      st.downY = e.clientY;
       vel.current = 0;
-      track.setPointerCapture(e.pointerId);
-      track.style.cursor = "grabbing";
       cancelAnimationFrame(st.raf); st.raf = 0;
     };
 
     const onMove = (e: PointerEvent) => {
-      if (!dragging.current) return;
+      if (!st.down) return;
+
+      if (!dragging.current) {
+        const ddx = e.clientX - st.downX;
+        const ddy = e.clientY - st.downY;
+        if (Math.abs(ddx) < DRAG_THRESHOLD && Math.abs(ddy) < DRAG_THRESHOLD) return;
+        dragging.current = true;
+        track.setPointerCapture(e.pointerId);
+        track.style.cursor = "grabbing";
+      }
+
       const dx  = e.clientX - st.lastX;
       const now = performance.now();
       const dt  = now - st.lastT;
@@ -206,6 +224,7 @@ function useInfiniteCarousel(trackRef: React.RefObject<HTMLDivElement | null>) {
     };
 
     const onUp = (e: PointerEvent) => {
+      st.down = false;
       if (!dragging.current) return;
       dragging.current = false;
       track.releasePointerCapture(e.pointerId);
@@ -297,18 +316,18 @@ function ContactCardContent({ onClick }: { onClick: () => void }) {
       <div className="card-label flex-shrink-0"><Briefcase size={10} />Contact</div>
       <div className="flex flex-col gap-1 flex-1 min-h-0 overflow-hidden">
         <a href={`mailto:${personalInfo.email}`} className="card-body text-xs hover:underline truncate"
-          onClick={() => trackEvent("github_click")}>{personalInfo.email}</a>
+          onClick={() => trackEvent("email_click")}>{personalInfo.email}</a>
         <p className="card-body text-xs">{personalInfo.location}</p>
       </div>
-      <div className="flex gap-2 flex-shrink-0">
+      <div className="flex flex-wrap gap-2 flex-shrink-0">
         {([
-          { icon: Github,    href: personalInfo.github,    event: "github_click"   as const },
-          { icon: Linkedin,  href: personalInfo.linkedin,  event: "linkedin_click" as const },
-          { icon: Instagram, href: personalInfo.instagram, event: "github_click"   as const },
-          { icon: Mail,      href: `mailto:${personalInfo.email}`, event: "contact_submit" as const },
+          { icon: Github,    href: personalInfo.github,    event: "github_click"    as const },
+          { icon: Linkedin,  href: personalInfo.linkedin,  event: "linkedin_click"  as const },
+          { icon: Instagram, href: personalInfo.instagram, event: "instagram_click" as const },
+          { icon: Mail,      href: `mailto:${personalInfo.email}`, event: "email_click" as const },
         ] as const).map(({ icon: Icon, href, event }, i) => (
           <a key={i} href={href} target="_blank" rel="noopener noreferrer"
-            className="social-link" style={{ width: 30, height: 30 }}
+            className="social-link social-link-sm"
             onClick={() => trackEvent(event)}>
             <Icon size={13} />
           </a>
@@ -318,23 +337,40 @@ function ContactCardContent({ onClick }: { onClick: () => void }) {
   );
 }
 
-function BookingCardContent({ onClick }: { onClick: () => void }) {
-  const slots = ["Mon–Fri  10 AM", "Mon–Fri  2 PM", "Sat  11 AM"];
+const CALL_SLOTS = [
+  { label: "Mon–Fri  10 AM", value: "10:00 AM" },
+  { label: "Mon–Fri  2 PM",  value: "02:00 PM" },
+  { label: "Sat  11 AM",     value: "11:00 AM" },
+];
+
+function BookingCardContent({ onBook }: { onBook: (time?: string) => void }) {
+  const [selected, setSelected] = useState<string | null>(null);
+
+  const pickSlot = (value: string) => {
+    setSelected(value);
+    onBook(value);
+  };
+
   return (
     <div className="p-4 flex flex-col gap-2 h-full">
       <div className="card-label flex-shrink-0"><Calendar size={10} />Free 30-min call</div>
       <p className="card-title flex-shrink-0" style={{ fontSize: 20 }}>Book a Call</p>
       <p className="card-body text-xs flex-shrink-0">No commitment — just a chat about your project.</p>
       <div className="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
-        {slots.map(s => (
-          <div key={s} className="flex items-center gap-2 px-3 py-1.5 rounded-xl flex-shrink-0"
-            style={{ background:"rgba(35,83,71,0.35)", border:"1px solid rgba(218,241,222,0.1)" }}>
+        {CALL_SLOTS.map(s => (
+          <button
+            key={s.value}
+            type="button"
+            onClick={() => pickSlot(s.value)}
+            aria-pressed={selected === s.value}
+            className={`slot-chip flex-shrink-0${selected === s.value ? " selected" : ""}`}
+          >
             <Clock size={11} style={{ color:"#8EB69B", flexShrink: 0 }} />
-            <span className="card-body text-xs">{s}</span>
-          </div>
+            <span className="card-body text-xs">{s.label}</span>
+          </button>
         ))}
       </div>
-      <button onClick={onClick} className="card-btn flex-shrink-0" style={{ justifyContent: "center" }}>
+      <button onClick={() => onBook(selected ?? undefined)} className="card-btn flex-shrink-0" style={{ justifyContent: "center" }}>
         <Calendar size={13} />Schedule 30 min
       </button>
     </div>
@@ -343,8 +379,19 @@ function BookingCardContent({ onClick }: { onClick: () => void }) {
 
 function FeaturedProjectCardContent() {
   const p = projects[0];
+  const openProject = () => window.open(p.github, "_blank", "noopener,noreferrer");
   return (
-    <div className="p-4 flex flex-col gap-2 h-full">
+    <div
+      className="p-4 flex flex-col gap-2 h-full"
+      style={{ cursor: "pointer" }}
+      role="link"
+      tabIndex={0}
+      aria-label={`Open ${p.title} on GitHub`}
+      onClick={() => { trackEvent("project_click"); openProject(); }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") { e.preventDefault(); trackEvent("project_click"); openProject(); }
+      }}
+    >
       <div className="relative rounded-xl overflow-hidden flex-shrink-0" style={{ height: 72 }}>
         <div className="absolute inset-0" style={{ background:"linear-gradient(135deg,rgba(22,56,50,0.6),rgba(142,182,155,0.15))" }} />
         <div className="absolute inset-0" style={{ backgroundImage:"linear-gradient(rgba(35,83,71,0.22) 1px,transparent 1px),linear-gradient(90deg,rgba(35,83,71,0.22) 1px,transparent 1px)", backgroundSize:"20px 20px" }} />
@@ -357,7 +404,7 @@ function FeaturedProjectCardContent() {
         {p.tech.slice(0,3).map(t => <span key={t} className="tech-badge" style={{ fontSize: 10 }}>{t}</span>)}
       </div>
       <a href={p.github} target="_blank" rel="noopener noreferrer" className="card-btn flex-shrink-0"
-        style={{ justifyContent: "center" }} onClick={() => trackEvent("project_click")}>
+        style={{ justifyContent: "center" }} onClick={(e) => { e.stopPropagation(); trackEvent("project_click"); }}>
         <Github size={13} />GitHub
       </a>
     </div>
@@ -430,15 +477,40 @@ function ProjectsCardContent() {
 }
 
 function ResumeCardContent() {
+  const [available, setAvailable] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    fetch(personalInfo.resume, { method: "HEAD" })
+      .then((res) => { if (alive) setAvailable(res.ok); })
+      .catch(() => { if (alive) setAvailable(false); });
+    return () => { alive = false; };
+  }, []);
+
   return (
     <div className="p-4 flex flex-col gap-2 h-full">
       <div className="card-label flex-shrink-0"><Download size={10} />Resume</div>
       <p className="card-title flex-shrink-0" style={{ fontSize: 18 }}>Download CV</p>
       <p className="card-body text-xs flex-1 min-h-0 overflow-hidden">AI Engineer · Full Stack · ML</p>
-      <a href={personalInfo.resume} download className="card-btn flex-shrink-0" style={{ justifyContent: "center" }}
-        onClick={() => trackEvent("resume_download")}>
-        <Download size={13} />PDF
-      </a>
+      {available === false ? (
+        <button
+          type="button" disabled
+          title="Resume coming soon" aria-label="Resume coming soon"
+          className="card-btn flex-shrink-0" style={{ justifyContent: "center" }}
+        >
+          <Download size={13} />Coming soon
+        </button>
+      ) : (
+        <a
+          href={personalInfo.resume} download
+          className="card-btn flex-shrink-0"
+          style={{ justifyContent: "center", pointerEvents: available === null ? "none" : "auto" }}
+          aria-disabled={available === null}
+          onClick={() => trackEvent("resume_download")}
+        >
+          <Download size={13} />PDF
+        </a>
+      )}
     </div>
   );
 }
@@ -467,13 +539,13 @@ type ColDef =
   | { id: string; width: number; type: "tall"; content: React.ReactNode }
   | { id: string; width: number; type: "pair"; top: React.ReactNode; bottom: React.ReactNode };
 
-function buildCols(onContact: () => void, onBooking: () => void): ColDef[] {
+function buildCols(onContact: () => void, onBooking: (time?: string) => void): ColDef[] {
   return [
     { id: "profile",  width: 210, type: "tall", content: <ProfileCardContent /> },
     { id: "hireme",   width: 210, type: "pair",
       top:    <HireMeCardContent    onClick={onContact} />,
       bottom: <ContactCardContent   onClick={onContact} /> },
-    { id: "booking",  width: 265, type: "tall", content: <BookingCardContent  onClick={onBooking} /> },
+    { id: "booking",  width: 265, type: "tall", content: <BookingCardContent  onBook={onBooking} /> },
     { id: "featured", width: 265, type: "tall", content: <FeaturedProjectCardContent /> },
     { id: "socials",  width: 210, type: "pair",
       top:    <GitHubCardContent />,
@@ -488,7 +560,7 @@ function buildCols(onContact: () => void, onBooking: () => void): ColDef[] {
 // ─── Main component ───────────────────────────────────────────────────────────
 interface Props {
   onContact: () => void;
-  onBooking: () => void;
+  onBooking: (time?: string) => void;
 }
 
 export default function CardGrid({ onContact, onBooking }: Props) {

@@ -18,10 +18,10 @@ const ContactModal = dynamic(() => import("@/components/ContactModal"), { ssr: f
 const BookingModal = dynamic(() => import("@/components/BookingModal"), { ssr: false });
 
 const socials = [
-  { icon: Github,    href: personalInfo.github,              label: "GitHub",    event: "github_click"   as const },
-  { icon: Linkedin,  href: personalInfo.linkedin,            label: "LinkedIn",  event: "linkedin_click" as const },
-  { icon: Instagram, href: personalInfo.instagram,           label: "Instagram", event: "github_click"   as const },
-  { icon: Mail,      href: `mailto:${personalInfo.email}`,   label: "Email",     event: "contact_submit" as const },
+  { icon: Github,    href: personalInfo.github,              label: "GitHub",    event: "github_click"    as const },
+  { icon: Linkedin,  href: personalInfo.linkedin,            label: "LinkedIn",  event: "linkedin_click"  as const },
+  { icon: Instagram, href: personalInfo.instagram,           label: "Instagram", event: "instagram_click" as const },
+  { icon: Mail,      href: `mailto:${personalInfo.email}`,   label: "Email",     event: "email_click"      as const },
 ];
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
@@ -32,6 +32,7 @@ export default function Home() {
   const [shareOpen,    setShareOpen]    = useState(false);
   const [contactOpen,  setContactOpen]  = useState(false);
   const [bookingOpen,  setBookingOpen]  = useState(false);
+  const [bookingTime,  setBookingTime]  = useState<string | undefined>(undefined);
   const [roleIndex,    setRoleIndex]    = useState(0);
 
   // Role cycling
@@ -171,7 +172,7 @@ export default function Home() {
         >
           <CardGrid
             onContact={() => setContactOpen(true)}
-            onBooking={() => setBookingOpen(true)}
+            onBooking={(time) => { setBookingTime(time); setBookingOpen(true); }}
           />
         </motion.div>
       </div>
@@ -239,7 +240,7 @@ export default function Home() {
 
       <AnimatePresence>
         {bookingOpen && (
-          <BookingModal key="booking" onClose={() => setBookingOpen(false)} />
+          <BookingModal key="booking" initialTime={bookingTime} onClose={() => setBookingOpen(false)} />
         )}
       </AnimatePresence>
     </>
