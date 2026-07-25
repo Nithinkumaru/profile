@@ -1,11 +1,5 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import UIProvider from "@/components/UIProvider";
-import Navbar from "@/components/Navbar";
-import ScrollProgress from "@/components/ScrollProgress";
-import CommandPalette from "@/components/CommandPalette";
-import Background from "@/components/Background";
-import CustomCursor from "@/components/CustomCursor";
 
 export const metadata: Metadata = {
   title: "Nithin Kumar U — AI & ML Engineer",
@@ -23,16 +17,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body suppressHydrationWarning>
-        <CustomCursor />
-        <Background />
-        <UIProvider>
-          <Navbar />
-          <ScrollProgress />
-          <CommandPalette />
-          <main style={{ paddingTop: 64 }}>{children}</main>
-        </UIProvider>
-      </body>
+      <body suppressHydrationWarning>{children}</body>
     </html>
   );
 }

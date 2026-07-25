@@ -5,11 +5,10 @@ import { motion } from "framer-motion";
 import {
   Github, Linkedin, Instagram, Mail, ExternalLink, Calendar,
   Download, Code2, Briefcase, ArrowRight, Sparkles, ChevronRight,
-  MapPin, Clock, Brain, Car, Smartphone,
+  MapPin, Clock,
 } from "lucide-react";
 import { personalInfo, projects } from "@/lib/data";
 import { trackEvent } from "@/lib/supabase";
-import { spawnRipple } from "@/lib/utils";
 
 const EASE = [0.22, 0.61, 0.36, 1] as const;
 const GAP  = 12;   // px gap between columns
@@ -50,7 +49,7 @@ function Card({
     const tick = () => {
       p.rx += (p.trx - p.rx) * 0.1;
       p.ry += (p.try_ - p.ry) * 0.1;
-      const lift = p.hover ? -8 : 0;
+      const lift = p.hover ? -6 : 0;
       const sc   = p.hover ? 1.02 : 1;
       const glow = p.hover
         ? "0 18px 52px rgba(5,31,32,0.55), inset 0 1px 0 rgba(218,241,222,0.1)"
@@ -274,7 +273,7 @@ function useInfiniteCarousel(trackRef: React.RefObject<HTMLDivElement | null>) {
 
 function ProfileCardContent() {
   return (
-    <div className="card-content">
+    <div className="p-4 flex flex-col gap-2 h-full">
       <div className="flex items-center gap-3 flex-shrink-0">
         <div className="w-11 h-11 rounded-xl flex items-center justify-center font-bold text-sm flex-shrink-0"
           style={{ background: "linear-gradient(135deg,#163832,#8EB69B)", color: "#DAF1DE" }}>NK</div>
@@ -298,40 +297,9 @@ function ProfileCardContent() {
   );
 }
 
-const SERVICES = [
-  { icon: Code2,      title: "Full Stack Web Development", desc: "React, Next.js, Node.js, cloud-ready apps" },
-  { icon: Brain,      title: "AI & Machine Learning",        desc: "LLMs, RAG, computer vision, model training" },
-  { icon: Car,        title: "Vehicle OS & Embedded Systems", desc: "Automotive software, embedded Linux, real-time systems" },
-  { icon: Smartphone, title: "Mobile App Development",       desc: "Cross-platform iOS & Android apps" },
-];
-
-function ServicesCardContent({ onClick }: { onClick: () => void }) {
-  return (
-    <div className="card-content">
-      <div className="card-label flex-shrink-0"><Sparkles size={10} />What I Do</div>
-      <p className="card-title flex-shrink-0" style={{ fontSize: 20 }}>Services</p>
-      <div className="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
-        {SERVICES.map((s) => (
-          <div key={s.title} className="flex items-center gap-3 px-2.5 py-2 rounded-xl flex-shrink-0"
-            style={{ background: "rgba(35,83,71,0.3)" }}>
-            <s.icon size={16} style={{ color: "#8EB69B", flexShrink: 0 }} />
-            <div className="flex-1 min-w-0">
-              <p className="card-title truncate" style={{ fontSize: 13 }}>{s.title}</p>
-              <p className="card-body text-xs truncate">{s.desc}</p>
-            </div>
-          </div>
-        ))}
-      </div>
-      <button onClick={onClick} className="card-btn flex-shrink-0" style={{ justifyContent: "center" }}>
-        <Mail size={13} />Let&apos;s talk
-      </button>
-    </div>
-  );
-}
-
 function HireMeCardContent({ onClick }: { onClick: () => void }) {
   return (
-    <div className="card-content">
+    <div className="p-4 flex flex-col gap-2 h-full">
       <div className="card-label flex-shrink-0"><ExternalLink size={10} />Let&apos;s work together</div>
       <p className="card-title flex-shrink-0" style={{ fontSize: 20 }}>Hire Me</p>
       <p className="card-body text-xs flex-1 min-h-0 overflow-hidden">Looking for an AI engineer or full-stack developer.</p>
@@ -344,7 +312,7 @@ function HireMeCardContent({ onClick }: { onClick: () => void }) {
 
 function ContactCardContent({ onClick }: { onClick: () => void }) {
   return (
-    <div className="card-content">
+    <div className="p-4 flex flex-col gap-2 h-full">
       <div className="card-label flex-shrink-0"><Briefcase size={10} />Contact</div>
       <div className="flex flex-col gap-1 flex-1 min-h-0 overflow-hidden">
         <a href={`mailto:${personalInfo.email}`} className="card-body text-xs hover:underline truncate"
@@ -384,7 +352,7 @@ function BookingCardContent({ onBook }: { onBook: (time?: string) => void }) {
   };
 
   return (
-    <div className="card-content">
+    <div className="p-4 flex flex-col gap-2 h-full">
       <div className="card-label flex-shrink-0"><Calendar size={10} />Free 30-min call</div>
       <p className="card-title flex-shrink-0" style={{ fontSize: 20 }}>Book a Call</p>
       <p className="card-body text-xs flex-shrink-0">No commitment — just a chat about your project.</p>
@@ -414,7 +382,7 @@ function FeaturedProjectCardContent() {
   const openProject = () => window.open(p.github, "_blank", "noopener,noreferrer");
   return (
     <div
-      className="card-content"
+      className="p-4 flex flex-col gap-2 h-full"
       style={{ cursor: "pointer" }}
       role="link"
       tabIndex={0}
@@ -445,7 +413,7 @@ function FeaturedProjectCardContent() {
 
 function GitHubCardContent() {
   return (
-    <div className="card-content">
+    <div className="p-4 flex flex-col gap-2 h-full">
       <div className="card-label flex-shrink-0"><Github size={10} />Open Source</div>
       <p className="card-title flex-shrink-0" style={{ fontSize: 18 }}>GitHub</p>
       <div className="flex gap-4 flex-1 min-h-0 items-center">
@@ -466,7 +434,7 @@ function GitHubCardContent() {
 
 function LinkedInCardContent() {
   return (
-    <div className="card-content">
+    <div className="p-4 flex flex-col gap-2 h-full">
       <div className="card-label flex-shrink-0"><Linkedin size={10} />Network</div>
       <p className="card-title flex-shrink-0" style={{ fontSize: 18 }}>LinkedIn</p>
       <p className="card-body text-xs flex-1 min-h-0 overflow-hidden">Open to freelance, full-time, and consulting roles.</p>
@@ -481,7 +449,7 @@ function LinkedInCardContent() {
 function ProjectsCardContent() {
   const icons = ["🛡️","🚀","🤖","📞"];
   return (
-    <div className="card-content">
+    <div className="p-4 flex flex-col gap-2 h-full">
       <div className="card-label flex-shrink-0"><Code2 size={10} />Portfolio</div>
       <p className="card-title flex-shrink-0" style={{ fontSize: 20 }}>My Projects</p>
       <div className="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
@@ -520,7 +488,7 @@ function ResumeCardContent() {
   }, []);
 
   return (
-    <div className="card-content">
+    <div className="p-4 flex flex-col gap-2 h-full">
       <div className="card-label flex-shrink-0"><Download size={10} />Resume</div>
       <p className="card-title flex-shrink-0" style={{ fontSize: 18 }}>Download CV</p>
       <p className="card-body text-xs flex-1 min-h-0 overflow-hidden">AI Engineer · Full Stack · ML</p>
@@ -550,7 +518,7 @@ function ResumeCardContent() {
 function LatestBuildCardContent() {
   const p = projects[1];
   return (
-    <div className="card-content">
+    <div className="p-4 flex flex-col gap-2 h-full">
       <div className="card-label flex-shrink-0"><Sparkles size={10} />Latest</div>
       <p className="card-title flex-shrink-0" style={{ fontSize: 14, lineHeight: 1.3 }}>{p.title}</p>
       <div className="flex flex-wrap gap-1 flex-1 min-h-0 overflow-hidden content-start">
@@ -574,7 +542,6 @@ type ColDef =
 function buildCols(onContact: () => void, onBooking: (time?: string) => void): ColDef[] {
   return [
     { id: "profile",  width: 210, type: "tall", content: <ProfileCardContent /> },
-    { id: "services", width: 320, type: "tall", content: <ServicesCardContent onClick={onContact} /> },
     { id: "hireme",   width: 210, type: "pair",
       top:    <HireMeCardContent    onClick={onContact} />,
       bottom: <ContactCardContent   onClick={onContact} /> },
@@ -609,19 +576,6 @@ export default function CardGrid({ onContact, onBooking }: Props) {
     const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
     mq.addEventListener("change", handler);
     return () => mq.removeEventListener("change", handler);
-  }, []);
-
-  // Click-ripple for every card button / slot chip, delegated so it works
-  // regardless of which of the 3x-duplicated carousel copies was clicked.
-  useEffect(() => {
-    const onDown = (e: PointerEvent) => {
-      if (e.button !== 0) return;
-      const target = (e.target as HTMLElement)?.closest<HTMLElement>(".card-btn, .slot-chip");
-      if (!target || (target instanceof HTMLButtonElement && target.disabled)) return;
-      spawnRipple(target, e.clientX, e.clientY);
-    };
-    document.addEventListener("pointerdown", onDown);
-    return () => document.removeEventListener("pointerdown", onDown);
   }, []);
 
   // 3 copies for seamless infinite loop

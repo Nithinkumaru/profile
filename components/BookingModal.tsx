@@ -105,7 +105,7 @@ export default function BookingModal({ onClose, initialTime }: Props) {
             <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: "Space Grotesk, sans-serif", lineHeight: 1.2 }}>
               Book a Consultation
             </h2>
-            <p style={{ fontSize: 13, color: "var(--text-subtitle)", marginTop: 4 }}>
+            <p style={{ fontSize: 13, color: "rgba(218,241,222,0.5)", marginTop: 4 }}>
               30-minute free call — no commitment
             </p>
           </div>
@@ -140,7 +140,7 @@ export default function BookingModal({ onClose, initialTime }: Props) {
               <h3 style={{ fontSize: 20, fontWeight: 700, fontFamily: "Space Grotesk, sans-serif", marginBottom: 8 }}>
                 Booking confirmed!
               </h3>
-              <p style={{ fontSize: 14, color: "var(--text-subtitle)", lineHeight: 1.6 }}>
+              <p style={{ fontSize: 14, color: "rgba(218,241,222,0.5)", lineHeight: 1.6 }}>
                 See you on <strong style={{ color: "#8EB69B" }}>{form.preferred_date}</strong> at{" "}
                 <strong style={{ color: "#8EB69B" }}>{form.preferred_time}</strong>.
                 <br />A confirmation will be sent to {form.email}.
@@ -188,7 +188,7 @@ export default function BookingModal({ onClose, initialTime }: Props) {
 
               {/* Time slots */}
               <div>
-                <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-subtitle)", letterSpacing: "0.05em", display: "block", marginBottom: 10 }}>
+                <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(218,241,222,0.5)", letterSpacing: "0.05em", display: "block", marginBottom: 10 }}>
                   Preferred Time *
                 </label>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
@@ -200,7 +200,7 @@ export default function BookingModal({ onClose, initialTime }: Props) {
                         padding: "8px 14px", borderRadius: 50, fontSize: 12, fontWeight: 600,
                         cursor: "pointer", transition: "all 0.15s ease",
                         background: form.preferred_time === t ? "#235347" : "rgba(218,241,222,0.06)",
-                        color: form.preferred_time === t ? "#DAF1DE" : "var(--text-subtitle)",
+                        color: form.preferred_time === t ? "#DAF1DE" : "rgba(218,241,222,0.55)",
                         border: `1px solid ${form.preferred_time === t ? "rgba(218,241,222,0.25)" : "rgba(218,241,222,0.1)"}`,
                       }}
                     >
@@ -247,7 +247,7 @@ export default function BookingModal({ onClose, initialTime }: Props) {
 function BField({ label, error, children }: { label: string; error?: string; children: React.ReactElement<{ style?: React.CSSProperties }> }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-subtitle)", letterSpacing: "0.05em" }}>
+      <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(218,241,222,0.5)", letterSpacing: "0.05em" }}>
         {label}
       </label>
       {React.cloneElement(children, {

@@ -84,7 +84,7 @@ export default function ContactModal({ onClose }: Props) {
             <h2 style={{ fontSize: 22, fontWeight: 700, fontFamily: "Space Grotesk, sans-serif", lineHeight: 1.2 }}>
               Let&apos;s work together
             </h2>
-            <p style={{ fontSize: 13, color: "var(--text-subtitle)", marginTop: 4 }}>
+            <p style={{ fontSize: 13, color: "rgba(218,241,222,0.5)", marginTop: 4 }}>
               I&apos;ll get back within 24 hours
             </p>
           </div>
@@ -120,7 +120,7 @@ export default function ContactModal({ onClose }: Props) {
               <h3 style={{ fontSize: 20, fontWeight: 700, fontFamily: "Space Grotesk, sans-serif", marginBottom: 8 }}>
                 Message sent!
               </h3>
-              <p style={{ fontSize: 14, color: "var(--text-subtitle)", lineHeight: 1.6 }}>
+              <p style={{ fontSize: 14, color: "rgba(218,241,222,0.5)", lineHeight: 1.6 }}>
                 Thanks for reaching out. I&apos;ll reply to <strong style={{ color: "#8EB69B" }}>{form.email}</strong> shortly.
               </p>
               <button onClick={onClose} style={{
@@ -196,7 +196,7 @@ export default function ContactModal({ onClose }: Props) {
 function Field({ label, error, children }: { label: string; error?: string; children: React.ReactElement<{ style?: React.CSSProperties }> }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-      <label style={{ fontSize: 12, fontWeight: 600, color: "var(--text-subtitle)", letterSpacing: "0.05em" }}>
+      <label style={{ fontSize: 12, fontWeight: 600, color: "rgba(218,241,222,0.5)", letterSpacing: "0.05em" }}>
         {label}
       </label>
       <div style={{ position: "relative" }}>
