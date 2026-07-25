@@ -121,7 +121,7 @@ export default function ShareModal({ onClose }: { onClose: () => void }) {
               <p className="font-display font-bold text-white text-xl" style={{ fontFamily: "Space Grotesk" }}>
                 {personalInfo.name}
               </p>
-              <p className="text-white/50 text-xs">AI & ML Engineer</p>
+              <p className="text-white/70 text-xs">AI & ML Engineer</p>
             </div>
           </div>
 
@@ -147,7 +147,7 @@ export default function ShareModal({ onClose }: { onClose: () => void }) {
             onClick={() => handle("copy")}
           >
             <Link className="w-4 h-4 text-white/50 flex-shrink-0" />
-            <span className="text-xs text-white/50 flex-1 truncate">{url}</span>
+            <span className="text-xs text-white/70 flex-1 truncate">{url}</span>
             <span className="text-xs font-semibold text-purple-300 flex-shrink-0">
               {copied ? "Copied!" : "Copy"}
             </span>

@@ -1,43 +1,38 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
-import { Menu, X, Command, Download } from "lucide-react";
-import { navLinks } from "@/lib/data";
+import { Menu, X, Command, Share2 } from "lucide-react";
+import { useUI } from "@/components/UIProvider";
+
+const EASE = [0.22, 0.61, 0.36, 1] as const;
+
+type NavItem =
+  | { type: "route"; href: string; label: string }
+  | { type: "action"; id: string; label: string; onClick: () => void };
 
 export default function Navbar() {
+  const pathname = usePathname();
+  const { openContact, openBooking, openShare } = useUI();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [activeSection, setActiveSection] = useState("");
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 20);
+    const onScroll = () => setScrolled(window.scrollY > 12);
+    onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((e) => {
-          if (e.isIntersecting) setActiveSection(e.target.id);
-        });
-      },
-      { threshold: 0.3, rootMargin: "-80px 0px -60% 0px" }
-    );
+  // Close the mobile menu on route change
+  useEffect(() => { setMobileOpen(false); }, [pathname]);
 
-    navLinks.forEach((l) => {
-      const el = document.querySelector(l.href);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  const scrollTo = (href: string) => {
-    setMobileOpen(false);
-    document.querySelector(href)?.scrollIntoView({ behavior: "smooth" });
-  };
+  const items: NavItem[] = [
+    { type: "route", href: "/", label: "Home" },
+    { type: "action", id: "book", label: "Book a Call", onClick: () => openBooking() },
+    { type: "action", id: "contact", label: "Contact", onClick: openContact },
+  ];
 
   const openPalette = () => {
     document.dispatchEvent(new KeyboardEvent("keydown", { key: "k", ctrlKey: true }));
@@ -46,134 +41,99 @@ export default function Navbar() {
   return (
     <>
       <motion.nav
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-6 md:px-10 h-16"
-        initial={{ y: -20, opacity: 0 }}
+        className={`site-nav${scrolled ? " site-nav-scrolled" : ""}`}
+        initial={{ y: -16, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-        style={{
-          backdropFilter: scrolled ? "blur(20px)" : "none",
-          WebkitBackdropFilter: scrolled ? "blur(20px)" : "none",
-          background: scrolled ? "rgba(9,9,11,0.85)" : "transparent",
-          borderBottom: scrolled ? "1px solid rgba(255,255,255,0.06)" : "none",
-          transition: "all 0.4s ease",
-        }}
+        transition={{ duration: 0.5, ease: EASE }}
       >
-        {/* Logo */}
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-          className="flex items-center gap-2 group"
-        >
-          <div className="w-8 h-8 rounded-xl flex items-center justify-center font-display font-bold text-sm"
-            style={{
-              background: "linear-gradient(135deg, #6C3EF4, #A855F7)",
-              boxShadow: "0 0 20px rgba(108,62,244,0.4)",
-            }}
-          >
-            N
-          </div>
-          <span className="font-display font-semibold text-sm text-zinc-300 group-hover:text-white transition-colors hidden sm:block">
-            Nithin Kumar
-          </span>
-        </button>
+        <a href="/" className="site-nav-logo" aria-label="Home">
+          <span className="site-nav-logo-mark">NK</span>
+          <span className="site-nav-logo-text">Nithin Kumar</span>
+        </a>
 
-        {/* Desktop links */}
-        <div className="hidden md:flex items-center gap-1">
-          {navLinks.map((link) => {
-            const isActive = activeSection === link.href.slice(1);
-            return (
-              <button
-                key={link.href}
-                onClick={() => scrollTo(link.href)}
-                className={`relative px-4 py-2 text-sm font-medium transition-colors rounded-lg ${
-                  isActive ? "text-white" : "text-zinc-500 hover:text-zinc-200"
-                }`}
+        <div className="site-nav-links">
+          {items.map((item) =>
+            item.type === "route" ? (
+              <a
+                key={item.href}
+                href={item.href}
+                className={`site-nav-link${pathname === item.href ? " active" : ""}`}
               >
-                {isActive && (
-                  <motion.div
-                    layoutId="nav-active"
-                    className="absolute inset-0 rounded-lg"
-                    style={{ background: "rgba(108,62,244,0.15)" }}
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
-                  />
-                )}
-                <span className="relative z-10">{link.label}</span>
+                {item.label}
+              </a>
+            ) : (
+              <button key={item.id} type="button" className="site-nav-link" onClick={item.onClick}>
+                {item.label}
               </button>
-            );
-          })}
+            )
+          )}
         </div>
 
-        {/* Right actions */}
-        <div className="flex items-center gap-2">
-          {/* Ctrl+K */}
+        <div className="site-nav-actions">
           <button
-            onClick={openPalette}
-            className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}
+            type="button"
+            className="top-btn site-nav-hide-mobile"
+            onClick={openShare}
+            aria-label="Share profile"
+            title="Share profile"
           >
-            <Command className="w-3 h-3" />
+            <Share2 size={16} style={{ color: "var(--text-subtitle)" }} />
+          </button>
+
+          <button
+            type="button"
+            className="site-nav-kbd site-nav-hide-mobile"
+            onClick={openPalette}
+            aria-label="Open command palette"
+          >
+            <Command size={12} />
             <span>K</span>
           </button>
 
-          {/* Resume */}
-          <a
-            href="/resume.pdf"
-            download
-            className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium text-white transition-all hover:scale-[1.02] magnetic-btn"
-            style={{
-              background: "linear-gradient(135deg, #6C3EF4, #A855F7)",
-              boxShadow: "0 0 20px rgba(108,62,244,0.3)",
-            }}
-          >
-            <Download className="w-3.5 h-3.5" />
-            Resume
-          </a>
-
-          {/* Mobile menu */}
           <button
-            className="md:hidden p-2 rounded-lg text-zinc-400 hover:text-white transition-colors"
+            type="button"
+            className="top-btn site-nav-burger"
             onClick={() => setMobileOpen((v) => !v)}
+            aria-label={mobileOpen ? "Close menu" : "Open menu"}
+            aria-expanded={mobileOpen}
           >
-            {mobileOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            {mobileOpen ? <X size={18} /> : <Menu size={18} />}
           </button>
         </div>
       </motion.nav>
 
-      {/* Mobile menu */}
       <AnimatePresence>
         {mobileOpen && (
           <motion.div
-            className="fixed top-16 left-0 right-0 z-40 mx-4 mt-2 rounded-2xl overflow-hidden"
-            initial={{ opacity: 0, y: -10, scale: 0.97 }}
+            className="site-nav-mobile"
+            initial={{ opacity: 0, y: -8, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.97 }}
-            transition={{ duration: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            style={{
-              background: "rgba(9,9,11,0.95)",
-              backdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.08)",
-            }}
+            exit={{ opacity: 0, y: -8, scale: 0.98 }}
+            transition={{ duration: 0.22, ease: EASE }}
           >
-            <div className="flex flex-col p-4 gap-1">
-              {navLinks.map((link) => (
+            {items.map((item) =>
+              item.type === "route" ? (
+                <a key={item.href} href={item.href} className="site-nav-mobile-link">
+                  {item.label}
+                </a>
+              ) : (
                 <button
-                  key={link.href}
-                  onClick={() => scrollTo(link.href)}
-                  className="w-full text-left px-4 py-3 rounded-xl text-sm text-zinc-400 hover:text-white hover:bg-white/5 transition-all"
+                  key={item.id}
+                  type="button"
+                  className="site-nav-mobile-link"
+                  onClick={() => { setMobileOpen(false); item.onClick(); }}
                 >
-                  {link.label}
+                  {item.label}
                 </button>
-              ))}
-              <div className="h-px bg-zinc-800 my-2" />
-              <a
-                href="/resume.pdf"
-                download
-                className="flex items-center justify-center gap-2 mx-2 py-3 rounded-xl text-sm font-medium text-white"
-                style={{ background: "linear-gradient(135deg, #6C3EF4, #A855F7)" }}
-              >
-                <Download className="w-4 h-4" />
-                Download Resume
-              </a>
-            </div>
+              )
+            )}
+            <button
+              type="button"
+              className="site-nav-mobile-link"
+              onClick={() => { setMobileOpen(false); openShare(); }}
+            >
+              Share profile
+            </button>
           </motion.div>
         )}
       </AnimatePresence>
