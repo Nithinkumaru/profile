@@ -5,11 +5,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Github, Linkedin, Instagram, Mail, Share2, Flame, Sparkles } from "lucide-react";
 import dynamic from "next/dynamic";
 
-import Background    from "@/components/Background";
-import CardGrid      from "@/components/CardGrid";
-import ShareModal    from "@/components/ShareModal";
-import CustomCursor  from "@/components/CustomCursor";
-import LoadingScreen from "@/components/LoadingScreen";
+import Background       from "@/components/Background";
+import CardGrid         from "@/components/CardGrid";
+import ShareModal       from "@/components/ShareModal";
+import CustomCursor     from "@/components/CustomCursor";
+import LoadingScreen    from "@/components/LoadingScreen";
+import PremiumSections  from "@/components/PremiumSections";
 import { personalInfo } from "@/lib/data";
 import { trackEvent } from "@/lib/supabase";
 
@@ -176,6 +177,12 @@ export default function Home() {
           />
         </motion.div>
       </div>
+
+      {/* ── PREMIUM SECTIONS (scrolls in below the hero fold) ── */}
+      <PremiumSections
+        onContact={() => setContactOpen(true)}
+        onBooking={(time) => { setBookingTime(time); setBookingOpen(true); }}
+      />
 
       {/* ── AI FAB (floating widget, bottom-right — never overlaps CTAs) ── */}
       <AnimatePresence>
