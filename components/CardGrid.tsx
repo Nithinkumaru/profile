@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
 import {
   Github, Linkedin, Instagram, Mail, ExternalLink, Calendar,
   Download, Code2, Briefcase, ArrowRight, Sparkles, ChevronRight,
@@ -385,14 +387,15 @@ function BookingCardContent({ onBook }: { onBook: (time?: string) => void }) {
 
 function FeaturedProjectCardContent() {
   const p = projects[0];
-  const openProject = () => window.open(p.github, "_blank", "noopener,noreferrer");
+  const router = useRouter();
+  const openProject = () => router.push(`/projects/${p.slug}`);
   return (
     <div
       className="p-4 flex flex-col gap-2 h-full"
       style={{ cursor: "pointer" }}
       role="link"
       tabIndex={0}
-      aria-label={`Open ${p.title} on GitHub`}
+      aria-label={`Explore ${p.title}`}
       onClick={() => { trackEvent("project_click"); openProject(); }}
       onKeyDown={(e) => {
         if (e.key === "Enter" || e.key === " ") { e.preventDefault(); trackEvent("project_click"); openProject(); }
@@ -405,14 +408,14 @@ function FeaturedProjectCardContent() {
       </div>
       <div className="card-label flex-shrink-0"><Sparkles size={10} />Featured</div>
       <p className="card-title flex-shrink-0" style={{ fontSize: 16, lineHeight: 1.3 }}>{p.title}</p>
-      <p className="card-body text-xs flex-1 min-h-0 overflow-hidden line-clamp-2">{p.description}</p>
+      <p className="card-body text-xs flex-1 min-h-0 overflow-hidden line-clamp-2">{p.tagline}</p>
       <div className="flex flex-wrap gap-1.5 flex-shrink-0">
         {p.tech.slice(0,3).map(t => <span key={t} className="tech-badge" style={{ fontSize: 10 }}>{t}</span>)}
       </div>
-      <a href={p.github} target="_blank" rel="noopener noreferrer" className="card-btn flex-shrink-0"
-        style={{ justifyContent: "center" }} onClick={(e) => { e.stopPropagation(); trackEvent("project_click"); }}>
-        <Github size={13} />GitHub
-      </a>
+      <button type="button" className="card-btn flex-shrink-0" style={{ justifyContent: "center" }}
+        onClick={(e) => { e.stopPropagation(); trackEvent("project_click"); openProject(); }}>
+        Explore Project <ArrowRight size={13} />
+      </button>
     </div>
   );
 }
@@ -460,7 +463,7 @@ function ProjectsCardContent() {
       <p className="card-title flex-shrink-0" style={{ fontSize: 20 }}>My Projects</p>
       <div className="flex flex-col gap-1.5 flex-1 min-h-0 overflow-hidden">
         {projects.slice(0,4).map((p, i) => (
-          <a key={p.id} href={p.github} target="_blank" rel="noopener noreferrer"
+          <Link key={p.id} href={`/projects/${p.slug}`}
             className="flex items-center gap-3 px-2.5 py-2 rounded-xl flex-shrink-0"
             style={{ background:"rgba(35,83,71,0.3)", transition:"background 0.2s ease" }}
             onClick={() => trackEvent("project_click")}
@@ -470,14 +473,14 @@ function ProjectsCardContent() {
               <p className="card-title truncate" style={{ fontSize: 13 }}>{p.title}</p>
               <p className="card-body text-xs truncate">{p.tech.slice(0,2).join(" · ")}</p>
             </div>
-            <ExternalLink size={11} style={{ color:"rgba(218,241,222,0.3)", flexShrink: 0 }} />
-          </a>
+            <ArrowRight size={11} style={{ color:"rgba(218,241,222,0.3)", flexShrink: 0 }} />
+          </Link>
         ))}
       </div>
-      <a href={personalInfo.github} target="_blank" rel="noopener noreferrer" className="card-btn flex-shrink-0"
-        style={{ justifyContent: "center" }} onClick={() => trackEvent("github_click")}>
+      <Link href="/projects" className="card-btn flex-shrink-0"
+        style={{ justifyContent: "center" }} onClick={() => trackEvent("project_click")}>
         All projects <ArrowRight size={13} />
-      </a>
+      </Link>
     </div>
   );
 }
@@ -530,10 +533,10 @@ function LatestBuildCardContent() {
       <div className="flex flex-wrap gap-1 flex-1 min-h-0 overflow-hidden content-start">
         {p.tech.slice(0,2).map(t => <span key={t} className="tech-badge" style={{ fontSize: 10 }}>{t}</span>)}
       </div>
-      <a href={p.github} target="_blank" rel="noopener noreferrer" className="card-btn flex-shrink-0"
+      <Link href={`/projects/${p.slug}`} className="card-btn flex-shrink-0"
         style={{ justifyContent: "center" }} onClick={() => trackEvent("project_click")}>
-        View <ExternalLink size={13} />
-      </a>
+        Explore <ArrowRight size={13} />
+      </Link>
     </div>
   );
 }
