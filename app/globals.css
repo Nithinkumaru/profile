@@ -1022,25 +1022,28 @@ html, body {
 
 @media (min-width: 1025px) {
   .what-i-do-grid {
-    grid-template-columns: repeat(4, 1fr);
-    grid-auto-rows: 200px;
+    /* 12-col grid, cards span columns only (no row-spanning) — every row's height is
+       auto/content-driven, so a card can never be shorter than what it needs to render.
+       Column spans are chosen to sum to exactly 12 per row: 3+6+3, 4+4+4, 6+3+3. */
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+    align-items: stretch;
     gap: 22px;
   }
-  .wid-1 { grid-column: 1 / 2; grid-row: 1 / 2; }
-  .wid-2 { grid-column: 2 / 3; grid-row: 1 / 2; }
-  .wid-3 { grid-column: 4 / 5; grid-row: 1 / 4; }
-  .wid-4 { grid-column: 3 / 4; grid-row: 1 / 2; }
-  .wid-5 { grid-column: 3 / 4; grid-row: 2 / 3; }
-  .wid-6 { grid-column: 1 / 2; grid-row: 3 / 4; }
-  .wid-7 { grid-column: 1 / 3; grid-row: 2 / 3; }
-  .wid-8 { grid-column: 2 / 3; grid-row: 3 / 4; }
-  .wid-9 { grid-column: 3 / 4; grid-row: 3 / 4; }
+  .wid-1 { grid-column: span 3; }
+  .wid-2 { grid-column: span 6; }
+  .wid-3 { grid-column: span 3; }
+  .wid-4 { grid-column: span 4; }
+  .wid-5 { grid-column: span 4; }
+  .wid-6 { grid-column: span 4; }
+  .wid-7 { grid-column: span 6; }
+  .wid-8 { grid-column: span 3; }
+  .wid-9 { grid-column: span 3; }
 }
 
 .wid-card {
   position: relative;
-  height: 100%;
-  min-height: 200px;
+  height: auto;
+  min-height: 240px;
   display: flex;
   flex-direction: column;
   background: rgba(11, 43, 38, 0.55);
@@ -1097,7 +1100,7 @@ html, body {
   align-items: center;
   gap: 8px;
   color: #8EB69B;
-  margin-bottom: 14px;
+  margin-bottom: 16px;
   padding-right: 90px;
 }
 
@@ -1122,7 +1125,7 @@ html, body {
   font-size: 20px;
   font-weight: 700;
   color: #DAF1DE;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   line-height: 1.25;
 }
 
@@ -1134,29 +1137,19 @@ html, body {
   font-size: 13.5px;
   line-height: 1.6;
   color: rgba(218, 241, 222, 0.62);
-  flex: 1;
-  min-height: 0;
 }
 
 .wid-tags {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
-  margin-top: 14px;
-  padding-right: 28px;
-}
-
-.wid-tech-line {
-  font-size: 12px;
-  color: rgba(218, 241, 222, 0.4);
-  margin-top: 10px;
-  padding-right: 28px;
+  margin-top: 16px;
 }
 
 .wid-arrow {
-  position: absolute;
-  bottom: 20px;
-  right: 20px;
+  align-self: flex-end;
+  margin-top: auto;
+  padding-top: 18px;
   color: rgba(218, 241, 222, 0.4);
   transition: transform 0.35s cubic-bezier(.22,.61,.36,1), color 0.3s ease;
 }

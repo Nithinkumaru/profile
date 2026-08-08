@@ -98,42 +98,39 @@ type WhatIDoItem = {
   gridClass: string;
   highlight?: boolean;
   badgeLabel?: string;
-  /** When set, `tags` renders as a muted tech-stack line instead of chips, and these
-   *  render as the primary chip row — used for the Custom Software Systems card, where
-   *  the real-world use case matters more to a client than the underlying tech names. */
-  useCases?: string[];
 };
 
-// gridClass (wid-1..wid-9) maps each card into a fixed desktop Bento template — see .what-i-do-grid in globals.css
+// gridClass (wid-1..wid-9) sets each card's column-span in a 12-col desktop grid — see .what-i-do-grid in
+// globals.css. Cards are plain column-spans (no row-spanning), so height is always auto/content-driven —
+// row auto-flow packs them 3-per-row (3+6+3, then 4+4+4, then 6+3+3), each summing to 12.
 const WHAT_I_DO: WhatIDoItem[] = [
   { icon: Smartphone, category: "App Development", title: "App Development",
-    desc: "Modern, responsive mobile applications built with clean architecture and smooth user experiences.",
+    desc: "Modern mobile applications with clean interfaces, smooth experiences and reliable backend integration.",
     tags: ["React Native", "Android", "API Integration", "Firebase"], gridClass: "wid-1" },
   { icon: Globe, category: "Web Development", title: "Web Development",
-    desc: "Fast, scalable and modern websites and web applications designed for real businesses and startups.",
+    desc: "Fast, scalable websites and web applications built for businesses and startups.",
     tags: ["React", "Vite", "Node.js", "TypeScript", "REST APIs"], gridClass: "wid-2" },
   { icon: BrainCircuit, category: "AI & Machine Learning", title: "AI & ML",
     desc: "Intelligent solutions using machine learning, LLMs and AI-powered automation.",
     tags: ["Python", "Machine Learning", "LLMs", "Hugging Face", "LangChain"], gridClass: "wid-3",
     highlight: true, badgeLabel: "Core Skill" },
   { icon: MessageSquareCode, category: "AI Chatbots", title: "AI Chatbots",
-    desc: "Custom AI assistants and chatbots that understand users, answer questions and automate conversations.",
+    desc: "AI assistants that understand users, answer questions and automate conversations.",
     tags: ["LLMs", "RAG", "LangChain", "Vector DB", "AI Agents"], gridClass: "wid-4" },
   { icon: Bug, category: "QA & Automation", title: "QA & Automation",
-    desc: "Reliable software testing and automation to improve product quality and reduce repetitive manual testing.",
+    desc: "Software testing and automation that improves reliability and reduces repetitive work.",
     tags: ["Manual Testing", "Automation Testing", "API Testing", "Postman"], gridClass: "wid-5" },
   { icon: Server, category: "Backend & APIs", title: "Backend & APIs",
-    desc: "Secure and scalable backend systems, REST APIs and database-driven applications.",
+    desc: "Secure backend systems, REST APIs and database-driven applications.",
     tags: ["Node.js", "Express", "TypeScript", "MySQL", "MongoDB"], gridClass: "wid-6" },
-  { icon: MonitorCog, category: "Custom Software / Systems", title: "Custom Software Systems",
-    desc: "Custom software built specifically for your device or business — from vehicle dashboards to complete cafe ordering and billing systems.",
-    useCases: ["Vehicle Dashboards", "Cafe & Restaurant Systems", "Billing & POS", "Ordering Systems", "Kiosk Software", "Custom Business Software"],
-    tags: ["React", "Node.js", "Python", "Linux"], gridClass: "wid-7", badgeLabel: "Custom Built" },
+  { icon: MonitorCog, category: "Custom Software", title: "Custom Software Systems",
+    desc: "Purpose-built software for devices, businesses and workflows.",
+    tags: ["Custom Systems", "Dashboards", "POS", "Business Software"], gridClass: "wid-7", badgeLabel: "Custom Built" },
   { icon: Cloud, category: "Deployment & Cloud", title: "Deployment & Cloud",
-    desc: "Deploying and maintaining production-ready applications with reliable hosting and infrastructure.",
+    desc: "Deploying and maintaining reliable, production-ready applications.",
     tags: ["Vercel", "Hostinger", "GitHub", "Cloudflare", "Linux"], gridClass: "wid-8" },
   { icon: Workflow, category: "Automation & Integrations", title: "Automation & Integrations",
-    desc: "Connecting tools, APIs and business workflows to eliminate repetitive work and improve productivity.",
+    desc: "Connecting APIs, tools and business workflows to reduce repetitive work.",
     tags: ["REST APIs", "Webhooks", "Workflow Automation", "Third-party APIs"], gridClass: "wid-9" },
 ];
 
@@ -228,18 +225,9 @@ function WhatIDo({ onContact }: { onContact: () => void }) {
               </div>
               <p className="wid-title">{s.title}</p>
               <p className="wid-desc">{s.desc}</p>
-              {s.useCases ? (
-                <>
-                  <div className="wid-tags">
-                    {s.useCases.map((t) => <span key={t} className="tag-chip">{t}</span>)}
-                  </div>
-                  <p className="wid-tech-line">{s.tags.join(" · ")}</p>
-                </>
-              ) : (
-                <div className="wid-tags">
-                  {s.tags.map((t) => <span key={t} className="tag-chip">{t}</span>)}
-                </div>
-              )}
+              <div className="wid-tags">
+                {s.tags.map((t) => <span key={t} className="tag-chip">{t}</span>)}
+              </div>
               <ArrowUpRight className="wid-arrow" size={16} aria-hidden="true" />
             </div>
           </Reveal>
