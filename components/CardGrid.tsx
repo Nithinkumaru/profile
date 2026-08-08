@@ -162,11 +162,17 @@ function useInfiniteCarousel(trackRef: React.RefObject<HTMLDivElement | null>) {
     };
 
     // ── Wheel ─────────────────────────────
+    // Only a horizontally-dominant gesture (shift+wheel, trackpad side-swipe) drives
+    // the carousel. A normal vertical scroll is left alone — no preventDefault — so
+    // it falls through to the page and scrolls down to the next section, same as
+    // scrolling anywhere else on the hero.
     const onWheel = (e: WheelEvent) => {
+      const horizontal = Math.abs(e.deltaX) > Math.abs(e.deltaY);
+      if (!horizontal) return;
+
       e.preventDefault();
       resetIdleTimer();
-      const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-      vel.current += (e.deltaMode === 1 ? d * 30 : d) * 0.18;  // was 0.5 — much gentler
+      vel.current += (e.deltaMode === 1 ? e.deltaX * 30 : e.deltaX) * 0.18;  // was 0.5 — much gentler
       vel.current = Math.max(-40, Math.min(40, vel.current));   // tighter cap (was ±90)
       go();
     };
