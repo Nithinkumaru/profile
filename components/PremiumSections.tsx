@@ -323,7 +323,7 @@ interface Props {
 export default function PremiumSections({ onContact, onBooking }: Props) {
   return (
     <>
-      <div className="section"><div className="section-inner">
+      <div className="section" id="what-i-do"><div className="section-inner">
         <SectionHeader
           label="Freelance Services"
           title="What I Do"

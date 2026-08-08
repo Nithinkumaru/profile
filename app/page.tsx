@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Github, Linkedin, Instagram, Mail, Share2, Flame, Sparkles } from "lucide-react";
+import { Github, Linkedin, Instagram, Mail, Share2, Flame, Sparkles, ChevronDown } from "lucide-react";
 import dynamic from "next/dynamic";
 
 import Background       from "@/components/Background";
@@ -35,6 +35,20 @@ export default function Home() {
   const [bookingOpen,  setBookingOpen]  = useState(false);
   const [bookingTime,  setBookingTime]  = useState<string | undefined>(undefined);
   const [roleIndex,    setRoleIndex]    = useState(0);
+  const [scrolled,     setScrolled]     = useState(false);
+
+  // Reveal a "scroll to explore" hint until the visitor scrolls past the hero —
+  // the page used to end at the fold, so there's no other cue that more exists below.
+  // Scroll position is read from body (not window) because the desktop/mobile
+  // overflow rules make <body> the actual scrolling element, not <html>/window;
+  // the listener is attached with capture:true since body's scroll event doesn't bubble.
+  useEffect(() => {
+    const getScrollY = () => document.body.scrollTop || document.documentElement.scrollTop || window.scrollY;
+    const onScroll = () => setScrolled(getScrollY() > 60);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true, capture: true });
+    return () => window.removeEventListener("scroll", onScroll, true);
+  }, []);
 
   // Role cycling
   useEffect(() => {
@@ -177,6 +191,25 @@ export default function Home() {
           />
         </motion.div>
       </div>
+
+      {/* ── SCROLL HINT (fades once the visitor scrolls past the hero) ── */}
+      <AnimatePresence>
+        {!scrolled && (
+          <motion.button
+            key="scroll-hint"
+            className="scroll-hint"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: loaded ? 1 : 0 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.4, ease: EASE }}
+            onClick={() => document.getElementById("what-i-do")?.scrollIntoView({ behavior: "smooth" })}
+            aria-label="Scroll to explore more"
+          >
+            <span>Scroll to explore</span>
+            <ChevronDown size={14} />
+          </motion.button>
+        )}
+      </AnimatePresence>
 
       {/* ── PREMIUM SECTIONS (scrolls in below the hero fold) ── */}
       <PremiumSections
