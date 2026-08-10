@@ -95,43 +95,42 @@ type WhatIDoItem = {
   title: string;
   desc: string;
   tags: string[];
-  gridClass: string;
   highlight?: boolean;
   badgeLabel?: string;
 };
 
-// gridClass (wid-1..wid-9) sets each card's column-span in a 12-col desktop grid — see .what-i-do-grid in
-// globals.css. Cards are plain column-spans (no row-spanning), so height is always auto/content-driven —
-// row auto-flow packs them 3-per-row (3+6+3, then 4+4+4, then 6+3+3), each summing to 12.
+// Rendered as a uniform 3-per-row grid (see .what-i-do-grid in globals.css) — order
+// below is the literal row order: App/Web/AI, then Chatbots/QA/Backend, then
+// Custom Software/Cloud/Automation.
 const WHAT_I_DO: WhatIDoItem[] = [
   { icon: Smartphone, category: "App Development", title: "App Development",
     desc: "Modern mobile applications with clean interfaces, smooth experiences and reliable backend integration.",
-    tags: ["React Native", "Android", "API Integration", "Firebase"], gridClass: "wid-1" },
+    tags: ["React Native", "Android", "API Integration", "Firebase"] },
   { icon: Globe, category: "Web Development", title: "Web Development",
     desc: "Fast, scalable websites and web applications built for businesses and startups.",
-    tags: ["React", "Vite", "Node.js", "TypeScript", "REST APIs"], gridClass: "wid-2" },
+    tags: ["React", "Vite", "Node.js", "TypeScript", "REST APIs"] },
   { icon: BrainCircuit, category: "AI & Machine Learning", title: "AI & ML",
     desc: "Intelligent solutions using machine learning, LLMs and AI-powered automation.",
-    tags: ["Python", "Machine Learning", "LLMs", "Hugging Face", "LangChain"], gridClass: "wid-3",
+    tags: ["Python", "Machine Learning", "LLMs", "Hugging Face", "LangChain"],
     highlight: true, badgeLabel: "Core Skill" },
   { icon: MessageSquareCode, category: "AI Chatbots", title: "AI Chatbots",
     desc: "AI assistants that understand users, answer questions and automate conversations.",
-    tags: ["LLMs", "RAG", "LangChain", "Vector DB", "AI Agents"], gridClass: "wid-4" },
+    tags: ["LLMs", "RAG", "LangChain", "Vector DB", "AI Agents"] },
   { icon: Bug, category: "QA & Automation", title: "QA & Automation",
     desc: "Software testing and automation that improves reliability and reduces repetitive work.",
-    tags: ["Manual Testing", "Automation Testing", "API Testing", "Postman"], gridClass: "wid-5" },
+    tags: ["Manual Testing", "Automation Testing", "API Testing", "Postman"] },
   { icon: Server, category: "Backend & APIs", title: "Backend & APIs",
     desc: "Secure backend systems, REST APIs and database-driven applications.",
-    tags: ["Node.js", "Express", "TypeScript", "MySQL", "MongoDB"], gridClass: "wid-6" },
+    tags: ["Node.js", "Express", "TypeScript", "MySQL", "MongoDB"] },
   { icon: MonitorCog, category: "Custom Software", title: "Custom Software Systems",
     desc: "Purpose-built software for devices, businesses and workflows.",
-    tags: ["Custom Systems", "Dashboards", "POS", "Business Software"], gridClass: "wid-7", badgeLabel: "Custom Built" },
+    tags: ["Custom Systems", "Dashboards", "POS", "Business Software"], badgeLabel: "Custom Built" },
   { icon: Cloud, category: "Deployment & Cloud", title: "Deployment & Cloud",
     desc: "Deploying and maintaining reliable, production-ready applications.",
-    tags: ["Vercel", "Hostinger", "GitHub", "Cloudflare", "Linux"], gridClass: "wid-8" },
+    tags: ["Vercel", "Hostinger", "GitHub", "Cloudflare", "Linux"] },
   { icon: Workflow, category: "Automation & Integrations", title: "Automation & Integrations",
     desc: "Connecting APIs, tools and business workflows to reduce repetitive work.",
-    tags: ["REST APIs", "Webhooks", "Workflow Automation", "Third-party APIs"], gridClass: "wid-9" },
+    tags: ["REST APIs", "Webhooks", "Workflow Automation", "Third-party APIs"] },
 ];
 
 const TECH_GROUPS: { name: string; items: { name: string; Icon: IconComp }[] }[] = [
@@ -216,7 +215,7 @@ function WhatIDo({ onContact }: { onContact: () => void }) {
     <>
       <div className="what-i-do-grid">
         {WHAT_I_DO.map((s, i) => (
-          <Reveal key={s.title} delay={(i % 4) * 0.06} className={s.gridClass}>
+          <Reveal key={s.title} delay={(i % 3) * 0.08}>
             <div className={`wid-card${s.highlight ? " wid-card--highlight" : ""}`}>
               {s.badgeLabel && <span className="wid-core-badge">{s.badgeLabel}</span>}
               <div className="wid-card-header">
@@ -343,22 +342,22 @@ export default function PremiumSections({ onContact, onBooking }: Props) {
 
       <div className="section"><div className="section-inner">
         <SectionHeader
-          label="Toolbox"
-          title="Technologies I Work With"
-          subtitle="The languages, frameworks, and infrastructure behind everything I build."
+          label="How I Work"
+          title="Development Process"
+          subtitle="A straightforward path from idea to a maintained product."
         />
-        <TechStack />
+        <Process />
       </div></div>
 
       <div className="section-divider" />
 
       <div className="section"><div className="section-inner">
         <SectionHeader
-          label="How I Work"
-          title="Development Process"
-          subtitle="A straightforward path from idea to a maintained product."
+          label="Toolbox"
+          title="Technologies I Work With"
+          subtitle="The languages, frameworks, and infrastructure behind everything I build."
         />
-        <Process />
+        <TechStack />
       </div></div>
 
       <div className="section-divider" />

@@ -1009,40 +1009,37 @@ html, body {
   border: 1px solid rgba(142, 182, 155, 0.18);
 }
 
-/* ========== "WHAT I DO" BENTO GRID ========== */
+/* ========== "WHAT I DO" SERVICE GRID ========== */
+/* Uniform grid — every card is exactly one column wide, so rows align cleanly and
+   height only ever varies where content genuinely needs it (auto height + stretch),
+   never from arbitrary spanning. Mobile: 1 col. Tablet (768–1024px): 2 cols. Desktop
+   (>1024px): 3 cols, matching the card order 3-per-row (App/Web/AI, Chatbots/QA/
+   Backend, Custom/Cloud/Automation). */
 .what-i-do-grid {
   display: grid;
   grid-template-columns: 1fr;
+  align-items: stretch;
   gap: 18px;
 }
 
-@media (min-width: 640px) {
+@media (min-width: 768px) {
   .what-i-do-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (min-width: 1025px) {
   .what-i-do-grid {
-    /* 12-col grid, cards span columns only (no row-spanning) — every row's height is
-       auto/content-driven, so a card can never be shorter than what it needs to render.
-       Column spans are chosen to sum to exactly 12 per row: 3+6+3, 4+4+4, 6+3+3. */
-    grid-template-columns: repeat(12, minmax(0, 1fr));
-    align-items: stretch;
-    gap: 22px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
   }
-  .wid-1 { grid-column: span 3; }
-  .wid-2 { grid-column: span 6; }
-  .wid-3 { grid-column: span 3; }
-  .wid-4 { grid-column: span 4; }
-  .wid-5 { grid-column: span 4; }
-  .wid-6 { grid-column: span 4; }
-  .wid-7 { grid-column: span 6; }
-  .wid-8 { grid-column: span 3; }
-  .wid-9 { grid-column: span 3; }
 }
 
 .wid-card {
   position: relative;
-  height: auto;
+  /* .wid-card is nested one level inside the actual grid item (Reveal's wrapper div),
+     which is what align-items:stretch grows to match the tallest card in its row —
+     height:100% here makes the visible card box follow that stretch, so every card
+     in a row shares the same bottom edge instead of just sharing the same top. */
+  height: 100%;
   min-height: 240px;
   display: flex;
   flex-direction: column;
