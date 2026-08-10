@@ -40,19 +40,42 @@ export type AnalyticsEvent =
 
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
+// Network-level failures (unreachable host, DNS, offline) surface as a bare
+// "TypeError: Failed to fetch" — supabase-js catches that internally and returns it
+// as error.message rather than throwing, so a try/catch alone won't intercept it.
+// Never show that raw text to a visitor filling out a form.
+const UNREACHABLE_MESSAGE = "Couldn't reach the server. Please email me directly instead.";
+
+function friendlyError(message?: string): string | undefined {
+  if (!message) return message;
+  return /failed to fetch|networkerror|load failed/i.test(message) ? UNREACHABLE_MESSAGE : message;
+}
+
 export async function submitContact(data: ContactRow) {
   if (!supabase) return { error: "Supabase not configured" };
-  const { error } = await supabase.from("contact_submissions").insert([data]);
-  return { error: error?.message };
+  try {
+    const { error } = await supabase.from("contact_submissions").insert([data]);
+    return { error: friendlyError(error?.message) };
+  } catch {
+    return { error: UNREACHABLE_MESSAGE };
+  }
 }
 
 export async function submitBooking(data: BookingRow) {
   if (!supabase) return { error: "Supabase not configured" };
-  const { error } = await supabase.from("booking_submissions").insert([data]);
-  return { error: error?.message };
+  try {
+    const { error } = await supabase.from("booking_submissions").insert([data]);
+    return { error: friendlyError(error?.message) };
+  } catch {
+    return { error: UNREACHABLE_MESSAGE };
+  }
 }
 
 export async function trackEvent(type: AnalyticsEvent, metadata?: Record<string, unknown>) {
   if (!supabase) return;
-  await supabase.from("analytics_events").insert([{ event_type: type, metadata }]);
+  try {
+    await supabase.from("analytics_events").insert([{ event_type: type, metadata }]);
+  } catch {
+    // Analytics failures should never be user-visible or throw unhandled rejections.
+  }
 }
