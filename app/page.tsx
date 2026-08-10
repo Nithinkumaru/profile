@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Github, Linkedin, Instagram, Mail, Share2, Flame, Sparkles, ChevronDown } from "lucide-react";
+import { Github, Linkedin, Mail, Share2, Flame, Sparkles, ChevronDown } from "lucide-react";
 import dynamic from "next/dynamic";
 
 import Background       from "@/components/Background";
@@ -21,7 +21,6 @@ const BookingModal = dynamic(() => import("@/components/BookingModal"), { ssr: f
 const socials = [
   { icon: Github,    href: personalInfo.github,              label: "GitHub",    event: "github_click"    as const },
   { icon: Linkedin,  href: personalInfo.linkedin,            label: "LinkedIn",  event: "linkedin_click"  as const },
-  { icon: Instagram, href: personalInfo.instagram,           label: "Instagram", event: "instagram_click" as const },
   { icon: Mail,      href: `mailto:${personalInfo.email}`,   label: "Email",     event: "email_click"      as const },
 ];
 

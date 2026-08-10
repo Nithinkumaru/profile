@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
-  Github, Linkedin, Instagram, Mail, ExternalLink, Calendar,
+  Github, Linkedin, Mail, ExternalLink, Calendar,
   Download, Code2, Briefcase, ArrowRight, Sparkles, ChevronRight,
   MapPin, Clock,
 } from "lucide-react";
@@ -331,7 +331,6 @@ function ContactCardContent({ onClick }: { onClick: () => void }) {
         {([
           { icon: Github,    href: personalInfo.github,    event: "github_click"    as const },
           { icon: Linkedin,  href: personalInfo.linkedin,  event: "linkedin_click"  as const },
-          { icon: Instagram, href: personalInfo.instagram, event: "instagram_click" as const },
           { icon: Mail,      href: `mailto:${personalInfo.email}`, event: "email_click" as const },
         ] as const).map(({ icon: Icon, href, event }, i) => (
           <a key={i} href={href} target="_blank" rel="noopener noreferrer"
